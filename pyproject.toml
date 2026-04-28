@@ -1,0 +1,73 @@
+[project]
+name = "benford-law-til"
+version = "0.1.0"
+description = "TIL: Benford's Law — rigorous derivation and fraud detection demo"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Bruno Ramos Martins", email = "brunoramosmartins1989@gmail.com" },
+]
+keywords = ["benford", "statistics", "fraud-detection", "til", "data-science"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy~=2.1",
+    "scipy~=1.14",
+    "pandas~=2.2",
+    "matplotlib~=3.9",
+    "seaborn~=0.13",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest~=8.3",
+    "ruff~=0.7",
+]
+notebook = [
+    "jupyter~=1.1",
+    "ipykernel~=6.29",
+]
+
+[project.urls]
+Repository = "https://github.com/brunoramosmartins/benford-law-til"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = [".venv", "notebooks"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N802"]  # allow non-snake_case test names when mirroring math notation
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers"]
