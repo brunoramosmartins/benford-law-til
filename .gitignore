@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+# Generated figures are committed (they ship with the TIL); only ignore stray files
+figures/*
+!figures/.gitkeep
+!figures/*.png
+!figures/*.svg
+!figures/*.pdf
+
+# Local development artifacts (not part of the public portfolio repo)
+.claude/
+roadmap-benford-law-til-v1.md
