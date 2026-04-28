@@ -43,9 +43,25 @@ SOURCE_LICENSE = "CC BY 4.0 — SimpleMaps World Cities (Basic)"
 
 
 def download_zip(url: str) -> bytes:
-    """Fetch a ZIP archive into memory."""
+    """Fetch a ZIP archive into memory.
+
+    SimpleMaps' CDN returns 403 to clients that send no ``User-Agent`` (the
+    Python urllib default), so we identify ourselves with a desktop browser
+    string. The download is otherwise unauthenticated.
+    """
     print(f"Downloading {url} ...", file=sys.stderr)
-    with urllib.request.urlopen(url, timeout=60) as resp:  # noqa: S310 - trusted URL
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124.0.0.0 Safari/537.36"
+            ),
+            "Accept": "application/zip,*/*",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=60) as resp:  # noqa: S310 - trusted URL
         return resp.read()
 
 
