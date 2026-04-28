@@ -10,7 +10,7 @@ A portfolio-grade **Today I Learned (TIL)** post on Benford's Law: the surprisin
 
 > The Benford distribution $P(d) = \log_{10}(1 + 1/d)$ is not an empirical curiosity to be memorized — it is the unique scale-invariant probability distribution over leading digits, derivable from two independent rigorous arguments (log-uniform mantissa and Pinkham's invariance principle). Its conformity is testable, its violations are diagnostic, and its everyday application to fraud detection is the cleanest possible demonstration that elementary measure theory matters in production data work.
 
-The full thesis, scope, and anti-scope live in [`docs/thesis.md`](docs/thesis.md).
+The full thesis, scope, and anti-scope live in [`docs/thesis.md`](docs/thesis.md). For the personal motivation behind the project, see [`docs/motivation.md`](docs/motivation.md).
 
 ## Repository layout
 
