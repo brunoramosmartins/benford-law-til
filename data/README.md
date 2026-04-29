@@ -20,21 +20,27 @@ script, not shipped pre-baked. To populate them:
 python scripts/build_datasets.py
 ```
 
-This downloads the **SimpleMaps World Cities (Basic)** dataset
-(<https://simplemaps.com/data/world-cities>, CC BY 4.0) and writes a trimmed
-CSV to `data/raw/world_cities.csv`. After running once, commit the resulting
-file:
+This downloads the **GeoNames cities5000** dataset
+(<https://download.geonames.org/export/dump/>, CC BY 4.0) and writes a
+trimmed CSV to `data/raw/world_cities.csv` with three columns: `city`,
+`country` (ISO-3166 alpha-2), `population`. After running once, commit the
+resulting file:
 
 ```bash
 git add data/raw/world_cities.csv
-git commit -m "chore(data): bundle SimpleMaps world-cities snapshot"
+git commit -m "chore(data): bundle GeoNames cities5000 snapshot"
 ```
 
 ## Sources
 
 | Dataset | Source | License | Snapshot |
 |---|---|---|---|
-| `world_cities.csv` | [SimpleMaps World Cities (Basic)](https://simplemaps.com/data/world-cities) | CC BY 4.0 | Recorded in the file's first comment line |
+| `world_cities.csv` | [GeoNames cities5000](https://download.geonames.org/export/dump/) | CC BY 4.0 | Recorded in the file's first comment line |
+
+> Earlier versions of this script used SimpleMaps World Cities, but
+> SimpleMaps' CDN began returning 403/404 for direct ZIP fetches in 2026.
+> GeoNames is the canonical free alternative and has had a stable URL for
+> over a decade.
 
 ## Synthetic datasets
 

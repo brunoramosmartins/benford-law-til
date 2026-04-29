@@ -1,9 +1,14 @@
 """Download and prepare the bundled real-world dataset.
 
-Fetches the **SimpleMaps World Cities (Basic)** snapshot
-(<https://simplemaps.com/data/world-cities>, CC BY 4.0), trims it to the
-columns the TIL needs, and writes ``data/raw/world_cities.csv`` with a
-provenance comment header.
+Fetches the **GeoNames cities5000** snapshot from the official GeoNames
+download server (<https://download.geonames.org/export/dump/>, CC BY 4.0),
+trims it to the columns the TIL needs, and writes
+``data/raw/world_cities.csv`` with a provenance comment header.
+
+GeoNames is the canonical free source of geographic data. ``cities5000.zip``
+contains ~50,000 cities with population ≥ 5000 — plenty of orders of
+magnitude for the Benford demo, and the URL has been stable for over a
+decade.
 
 Usage
 -----
@@ -15,7 +20,7 @@ The output CSV must then be committed by the author so the rest of the
 project can run without network access::
 
     git add data/raw/world_cities.csv
-    git commit -m "chore(data): bundle SimpleMaps world-cities snapshot"
+    git commit -m "chore(data): bundle GeoNames cities5000 snapshot"
 """
 
 from __future__ import annotations
@@ -33,21 +38,40 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = REPO_ROOT / "data" / "raw"
 OUT_CSV = OUT_DIR / "world_cities.csv"
 
-# SimpleMaps publishes versioned ZIPs. If this URL 404s, check
-# https://simplemaps.com/data/world-cities for the current basic-version URL.
-SIMPLEMAPS_URL = (
-    "https://simplemaps.com/static/data/world-cities/basic/"
-    "simplemaps_worldcities_basicv1.79.zip"
-)
-SOURCE_LICENSE = "CC BY 4.0 — SimpleMaps World Cities (Basic)"
+GEONAMES_URL = "https://download.geonames.org/export/dump/cities5000.zip"
+SOURCE_LICENSE = "CC BY 4.0 — GeoNames cities5000"
+
+# GeoNames dump column layout (tab-separated, no header).
+# See: https://download.geonames.org/export/dump/readme.txt
+GEONAMES_COLUMNS = [
+    "geonameid",
+    "name",
+    "asciiname",
+    "alternatenames",
+    "latitude",
+    "longitude",
+    "feature_class",
+    "feature_code",
+    "iso2",
+    "cc2",
+    "admin1_code",
+    "admin2_code",
+    "admin3_code",
+    "admin4_code",
+    "population",
+    "elevation",
+    "dem",
+    "timezone",
+    "modification_date",
+]
 
 
 def download_zip(url: str) -> bytes:
     """Fetch a ZIP archive into memory.
 
-    SimpleMaps' CDN returns 403 to clients that send no ``User-Agent`` (the
-    Python urllib default), so we identify ourselves with a desktop browser
-    string. The download is otherwise unauthenticated.
+    GeoNames does not require any auth or special headers, but we still
+    advertise a desktop User-Agent for friendlier behaviour with caching
+    proxies in between.
     """
     print(f"Downloading {url} ...", file=sys.stderr)
     request = urllib.request.Request(
@@ -66,29 +90,33 @@ def download_zip(url: str) -> bytes:
 
 
 def extract_csv(zip_bytes: bytes) -> pd.DataFrame:
-    """Find the worldcities CSV inside the ZIP and load it."""
+    """Find the cities TXT inside the ZIP and parse it as TSV."""
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
-        csv_name = next(
-            (n for n in zf.namelist() if n.lower().endswith(".csv")),
+        txt_name = next(
+            (n for n in zf.namelist() if n.lower().endswith(".txt")),
             None,
         )
-        if csv_name is None:
-            raise RuntimeError("No CSV found inside SimpleMaps ZIP")
-        with zf.open(csv_name) as f:
-            return pd.read_csv(f)
+        if txt_name is None:
+            raise RuntimeError("No .txt found inside GeoNames ZIP")
+        with zf.open(txt_name) as f:
+            return pd.read_csv(
+                f,
+                sep="\t",
+                header=None,
+                names=GEONAMES_COLUMNS,
+                dtype={"iso2": "string"},
+                na_values=[""],
+                keep_default_na=False,
+                low_memory=False,
+            )
 
 
 def trim(df: pd.DataFrame) -> pd.DataFrame:
-    """Keep only the columns the TIL needs and drop rows without population."""
-    keep = ["city", "country", "iso2", "population"]
-    missing = [c for c in keep if c not in df.columns]
-    if missing:
-        raise RuntimeError(
-            f"SimpleMaps schema changed: missing columns {missing}. "
-            f"Available: {sorted(df.columns)}"
-        )
-    out = df[keep].copy()
-    out = out.dropna(subset=["population"])
+    """Keep the columns the TIL needs and drop rows without population."""
+    out = df[["name", "iso2", "population"]].copy()
+    out = out.rename(columns={"name": "city", "iso2": "country"})
+    out = out.dropna(subset=["population", "city"])
+    out = out[out["population"] > 0]
     out["population"] = out["population"].astype(int)
     return out.sort_values("population", ascending=False).reset_index(drop=True)
 
@@ -97,7 +125,7 @@ def write_with_header(df: pd.DataFrame, path: Path) -> None:
     """Write CSV with a provenance comment line."""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     header = (
-        f"# Source: {SIMPLEMAPS_URL}\n"
+        f"# Source: {GEONAMES_URL}\n"
         f"# License: {SOURCE_LICENSE}\n"
         f"# Snapshot: {today}\n"
         f"# Rows: {len(df)}\n"
@@ -111,7 +139,7 @@ def write_with_header(df: pd.DataFrame, path: Path) -> None:
 
 def main() -> int:
     try:
-        zip_bytes = download_zip(SIMPLEMAPS_URL)
+        zip_bytes = download_zip(GEONAMES_URL)
         raw = extract_csv(zip_bytes)
         trimmed = trim(raw)
         write_with_header(trimmed, OUT_CSV)
