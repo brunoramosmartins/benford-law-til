@@ -1,13 +1,20 @@
-"""Benford's Law — first-digit extraction and theoretical PMF.
+"""Benford's Law — first-digit extraction, mantissa decomposition, and PMFs.
 
-Implements the two primitives that every later phase depends on:
+Implements the primitives the later phases depend on:
 
-* :func:`first_digit` — extract the leading significant digit of a real
-  number, robust to negative numbers, zeros, scientific notation, and
-  values smaller than 1.
-* :func:`benford_pmf` — the theoretical probability mass function
+* :func:`first_digit`, :func:`first_digits` — leading significant digit of
+  real numbers, robust to negatives, zeros, scientific notation, values
+  smaller than 1.
+* :func:`mantissa`, :func:`log_mantissa` — mantissa decomposition
+  :math:`X = r \\cdot 10^{k}` with :math:`r \\in [1, 10)` and the
+  fractional part of :math:`\\log_{10}(X)`. Phase 2's log-uniform premise
+  is exactly the assumption that ``log_mantissa(X)`` is uniform on
+  :math:`[0, 1)`.
+* :func:`benford_pmf` — first-digit PMF
   :math:`P(d) = \\log_{10}\\!\\left(1 + \\tfrac{1}{d}\\right)` for
   :math:`d \\in \\{1, \\ldots, 9\\}`.
+* :func:`joint_first_two_digits_pmf`, :func:`second_digit_pmf` — the
+  generalised significant-digit law and the marginal second-digit PMF.
 * :func:`empirical_frequencies` — count first-digit frequencies in a
   one-dimensional array of positive numbers.
 """
@@ -15,13 +22,16 @@ Implements the two primitives that every later phase depends on:
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Final
+from typing import Final, overload
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 DIGITS: Final[NDArray[np.int_]] = np.arange(1, 10)
 """The nine possible first significant digits, ``[1, 2, ..., 9]``."""
+
+SECOND_DIGITS: Final[NDArray[np.int_]] = np.arange(0, 10)
+"""The ten possible second significant digits, ``[0, 1, ..., 9]``."""
 
 
 def first_digit(x: float) -> int:
@@ -189,3 +199,168 @@ def empirical_frequencies(values: ArrayLike) -> NDArray[np.float64]:
     if n == 0:
         raise ValueError("empirical_frequencies: empty input")
     return counts / n
+
+
+def mantissa(values: ArrayLike) -> NDArray[np.float64]:
+    """Mantissa ``r`` of one or more positive reals, with ``r`` in ``[1, 10)``.
+
+    Decomposes ``X = r * 10**k`` with ``r in [1, 10)`` and ``k`` an integer.
+
+    Parameters
+    ----------
+    values : array-like of float
+        Nonzero finite real numbers. Negatives are folded via ``abs``.
+
+    Returns
+    -------
+    ndarray of float
+        Mantissas, each in ``[1, 10)``. Output has the same shape as input.
+
+    Examples
+    --------
+    >>> float(mantissa(1234))
+    1.234
+    >>> float(round(mantissa(0.0789), 4))
+    7.89
+    >>> import numpy as np
+    >>> np.round(mantissa([1, 9.99, 100, 0.05]), 6)
+    array([1.  , 9.99, 1.  , 5.  ])
+    """
+    arr = np.atleast_1d(np.asarray(values, dtype=float))
+    if not np.all(np.isfinite(arr)):
+        raise ValueError("mantissa: input contains NaN or inf")
+    if np.any(arr == 0):
+        raise ValueError("mantissa: input contains zero")
+    abs_arr = np.abs(arr)
+    exponents = np.floor(np.log10(abs_arr))
+    result = abs_arr / 10.0**exponents
+    # Clamp floating-point drift just below 10 or just above 1.
+    result = np.clip(result, 1.0, 10.0 - np.finfo(float).eps)
+    return result.reshape(np.shape(values))
+
+
+def log_mantissa(values: ArrayLike) -> NDArray[np.float64]:
+    """Fractional part of :math:`\\log_{10}(|X|)`, in ``[0, 1)``.
+
+    This is the random variable :math:`Y` whose distribution determines
+    Phase 2's derivation: if ``Y ~ Uniform(0, 1)``, the leading-digit
+    distribution is Benford.
+
+    Parameters
+    ----------
+    values : array-like of float
+        Nonzero finite real numbers.
+
+    Returns
+    -------
+    ndarray of float
+        Values in ``[0, 1)``, same shape as input.
+
+    Notes
+    -----
+    Equivalent to ``log10(mantissa(X))``: for ``X = r * 10**k`` with
+    ``r in [1, 10)``,
+
+    .. math::
+
+        \\log_{10}(X) = \\log_{10}(r) + k,
+        \\qquad
+        Y = \\log_{10}(X) \\bmod 1 = \\log_{10}(r) \\in [0, 1).
+    """
+    arr = np.atleast_1d(np.asarray(values, dtype=float))
+    if not np.all(np.isfinite(arr)):
+        raise ValueError("log_mantissa: input contains NaN or inf")
+    if np.any(arr == 0):
+        raise ValueError("log_mantissa: input contains zero")
+    log_x = np.log10(np.abs(arr))
+    frac = log_x - np.floor(log_x)
+    # Clamp [0, 1).
+    frac = np.clip(frac, 0.0, 1.0 - np.finfo(float).eps)
+    return frac.reshape(np.shape(values))
+
+
+def joint_first_two_digits_pmf(d1: int, d2: int) -> float:
+    """Joint PMF of the first two significant digits.
+
+    .. math::
+
+        P(D_1 = d_1, D_2 = d_2) =
+        \\log_{10}\\!\\left(1 + \\frac{1}{10 d_1 + d_2}\\right),
+        \\quad d_1 \\in \\{1, \\ldots, 9\\},\\ d_2 \\in \\{0, \\ldots, 9\\}.
+
+    Parameters
+    ----------
+    d1 : int
+        First digit, in ``{1, ..., 9}``.
+    d2 : int
+        Second digit, in ``{0, ..., 9}``.
+
+    Returns
+    -------
+    float
+        :math:`P(D_1 = d_1, D_2 = d_2)`.
+
+    Examples
+    --------
+    >>> round(joint_first_two_digits_pmf(1, 0), 6)
+    0.041393
+    """
+    if not 1 <= d1 <= 9:
+        raise ValueError(f"joint_first_two_digits_pmf: d1 must be in 1..9, got {d1}")
+    if not 0 <= d2 <= 9:
+        raise ValueError(f"joint_first_two_digits_pmf: d2 must be in 0..9, got {d2}")
+    return float(np.log10(1.0 + 1.0 / (10 * d1 + d2)))
+
+
+@overload
+def second_digit_pmf(d: None = ...) -> NDArray[np.float64]: ...
+@overload
+def second_digit_pmf(d: int) -> float: ...
+
+
+def second_digit_pmf(
+    d: int | None = None,
+) -> float | NDArray[np.float64]:
+    """Marginal PMF of the second significant digit.
+
+    Marginalises the joint PMF over the first digit:
+
+    .. math::
+
+        P(D_2 = d_2) = \\sum_{d_1 = 1}^{9}
+        \\log_{10}\\!\\left(1 + \\frac{1}{10 d_1 + d_2}\\right).
+
+    Parameters
+    ----------
+    d : int or None
+        - If ``int``: returns ``P(D_2 = d)`` for ``d in {0, ..., 9}``.
+        - If ``None``: returns the full PMF over ``[0, 1, ..., 9]``.
+
+    Returns
+    -------
+    float or ndarray of float
+        Probability mass(es). The full PMF sums to 1.
+
+    Notes
+    -----
+    The second-digit law is much flatter than the first-digit law:
+    :math:`P(D_2 = 0) \\approx 0.1197`, :math:`P(D_2 = 9) \\approx 0.0850`.
+
+    Examples
+    --------
+    >>> round(second_digit_pmf(0), 4)
+    0.1197
+    >>> pmf = second_digit_pmf()
+    >>> round(float(pmf.sum()), 6)
+    1.0
+    """
+    if d is None:
+        return np.array(
+            [
+                sum(joint_first_two_digits_pmf(d1, d2) for d1 in range(1, 10))
+                for d2 in range(0, 10)
+            ]
+        )
+    if not 0 <= d <= 9:
+        raise ValueError(f"second_digit_pmf: d must be in 0..9, got {d}")
+    return float(sum(joint_first_two_digits_pmf(d1, d) for d1 in range(1, 10)))
