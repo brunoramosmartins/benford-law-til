@@ -13,6 +13,10 @@ Implements the primitives the later phases depend on:
 * :func:`benford_pmf` — first-digit PMF
   :math:`P(d) = \\log_{10}\\!\\left(1 + \\tfrac{1}{d}\\right)` for
   :math:`d \\in \\{1, \\ldots, 9\\}`.
+* :func:`benford_pmf_base` — generalised first-digit PMF
+  :math:`P_b(d) = \\log_b\\!\\left(1 + \\tfrac{1}{d}\\right)` in arbitrary
+  base :math:`b \\ge 2`. The base-invariance corollary of Pinkham's
+  scale-invariance theorem (Phase 3).
 * :func:`joint_first_two_digits_pmf`, :func:`second_digit_pmf` — the
   generalised significant-digit law and the marginal second-digit PMF.
 * :func:`empirical_frequencies` — count first-digit frequencies in a
@@ -167,6 +171,59 @@ def benford_pmf(d: int | Iterable[int] | None = None) -> float | NDArray[np.floa
     if np.any((d_arr < 1) | (d_arr > 9)):
         raise ValueError("benford_pmf: all digits must be in 1..9")
     return np.log10(1.0 + 1.0 / d_arr)
+
+
+def benford_pmf_base(
+    d: int | None = None,
+    base: int = 10,
+) -> float | NDArray[np.float64]:
+    """Generalised Benford PMF in an arbitrary integer base ``b > 1``.
+
+    .. math::
+
+        P_b(d) = \\log_b\\!\\left(1 + \\frac{1}{d}\\right),
+        \\qquad d \\in \\{1, 2, \\ldots, b-1\\}.
+
+    The base-10 case (``base=10``) coincides with :func:`benford_pmf`. This
+    function is the *base invariance* corollary of Pinkham's scale-invariance
+    theorem (Phase 3): the same scale-invariance argument applied in base
+    ``b`` yields exactly this PMF.
+
+    Parameters
+    ----------
+    d : int or None
+        - If ``int``: returns ``P_b(d)`` for ``d`` in ``{1, ..., b-1}``.
+        - If ``None``: returns the full PMF over ``[1, 2, ..., b-1]``.
+    base : int, default 10
+        The numerical base ``b``, an integer ``>= 2``.
+
+    Returns
+    -------
+    float or ndarray of float
+        Probability mass(es). The full PMF sums to 1.
+
+    Examples
+    --------
+    >>> # Octal Benford: digits 1..7
+    >>> octal = benford_pmf_base(base=8)
+    >>> round(float(octal.sum()), 6)
+    1.0
+    >>> # Base-10 reduces to benford_pmf().
+    >>> import numpy as np
+    >>> bool(np.allclose(benford_pmf_base(base=10), benford_pmf()))
+    True
+    """
+    if base < 2:
+        raise ValueError(f"benford_pmf_base: base must be >= 2, got {base}")
+    log_b = np.log(base)
+    if d is None:
+        d_arr = np.arange(1, base, dtype=float)
+        return np.log(1.0 + 1.0 / d_arr) / log_b
+    if not 1 <= d <= base - 1:
+        raise ValueError(
+            f"benford_pmf_base: d must be in 1..{base - 1}, got {d}"
+        )
+    return float(np.log(1.0 + 1.0 / d) / log_b)
 
 
 def empirical_frequencies(values: ArrayLike) -> NDArray[np.float64]:
