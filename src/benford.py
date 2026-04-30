@@ -31,6 +31,20 @@ from typing import Final, overload
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+__all__ = [
+    "DIGITS",
+    "SECOND_DIGITS",
+    "benford_pmf",
+    "benford_pmf_base",
+    "empirical_frequencies",
+    "first_digit",
+    "first_digits",
+    "joint_first_two_digits_pmf",
+    "log_mantissa",
+    "mantissa",
+    "second_digit_pmf",
+]
+
 DIGITS: Final[NDArray[np.int_]] = np.arange(1, 10)
 """The nine possible first significant digits, ``[1, 2, ..., 9]``."""
 

@@ -40,7 +40,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy import stats
 
-from src.benford import DIGITS, benford_pmf, empirical_frequencies, first_digits
+from src.benford import DIGITS, benford_pmf, first_digits
 
 
 # ---------------------------------------------------------------------------
@@ -569,18 +569,13 @@ def conformity_report(
 
 __all__ = [
     "ChiSquareResult",
+    "ConformityReport",
     "KSResult",
     "MADResult",
     "PerDigitZResult",
-    "ConformityReport",
     "chi_square_test",
+    "conformity_report",
     "ks_test",
     "mad_test",
     "per_digit_z",
-    "conformity_report",
 ]
-
-
-# Re-export to silence lints about ``empirical_frequencies`` not being used —
-# kept available for downstream callers who import it from this module.
-_ = empirical_frequencies
