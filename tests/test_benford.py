@@ -11,6 +11,7 @@ from src.benford import (
     DIGITS,
     SECOND_DIGITS,
     benford_pmf,
+    benford_pmf_base,
     empirical_frequencies,
     first_digit,
     first_digits,
@@ -296,3 +297,48 @@ class TestSecondDigitPMF:
     def test_invalid_digit_raises(self, bad: int) -> None:
         with pytest.raises(ValueError):
             second_digit_pmf(bad)
+
+
+class TestBenfordPMFBase:
+    """Generalised PMF in arbitrary integer base (Phase 3 base invariance)."""
+
+    def test_base_10_matches_benford_pmf(self) -> None:
+        np.testing.assert_allclose(benford_pmf_base(base=10), benford_pmf(), rtol=1e-12)
+
+    @pytest.mark.parametrize("base", [2, 3, 8, 10, 16, 26])
+    def test_full_pmf_sums_to_one(self, base: int) -> None:
+        pmf = benford_pmf_base(base=base)
+        assert pmf.shape == (base - 1,)
+        assert math.isclose(float(pmf.sum()), 1.0, rel_tol=1e-12)
+
+    @pytest.mark.parametrize("base", [2, 3, 8, 10, 16])
+    def test_monotonically_decreasing(self, base: int) -> None:
+        pmf = benford_pmf_base(base=base)
+        assert np.all(np.diff(pmf) < 0)
+
+    def test_octal_known_value(self) -> None:
+        # P_8(1) = log_8(2) = ln(2) / ln(8) = 1/3
+        assert math.isclose(benford_pmf_base(1, base=8), 1.0 / 3.0, rel_tol=1e-12)
+
+    def test_binary_pmf(self) -> None:
+        # In base 2 the only allowed digit is 1, so P_2(1) = 1.
+        pmf = benford_pmf_base(base=2)
+        assert pmf.shape == (1,)
+        assert math.isclose(pmf[0], 1.0, rel_tol=1e-12)
+
+    def test_octal_leading_one_more_common_than_decimal(self) -> None:
+        # Octal-1 should occur ~33.3% vs decimal-1 ~30.1%.
+        assert benford_pmf_base(1, base=8) > benford_pmf(1)
+
+    @pytest.mark.parametrize(
+        "d, base",
+        [(0, 10), (10, 10), (8, 8), (-1, 10)],
+    )
+    def test_invalid_digit_raises(self, d: int, base: int) -> None:
+        with pytest.raises(ValueError):
+            benford_pmf_base(d, base=base)
+
+    @pytest.mark.parametrize("bad_base", [0, 1, -2])
+    def test_invalid_base_raises(self, bad_base: int) -> None:
+        with pytest.raises(ValueError, match="base must be"):
+            benford_pmf_base(base=bad_base)
