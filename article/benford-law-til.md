@@ -11,7 +11,7 @@ In 1881 the astronomer Simon Newcomb noticed something odd while flipping throug
 Newcomb wrote a two-page note in the *American Journal of Mathematics* arguing that the first significant digit of "natural" numerical data is not uniform but logarithmic:
 
 $$
-P(d) = \log_{10}\!\left(1 + \frac{1}{d}\right), \qquad d \in \{1, 2, \ldots, 9\}.
+P(d) = \log_{10}\left(1 + \frac{1}{d}\right), \qquad d = 1, 2, \ldots, 9.
 $$
 
 The leading 1 should appear about 30.1 % of the time, the leading 9 less than 5 %. Newcomb's "proof" was a heuristic about the mantissa of a random number being uniform; he gave no formal argument and no empirical data, and the note slid into obscurity.
@@ -30,11 +30,11 @@ Three datasets, three regimes, one curve.
 
 ![Empirical first-digit distributions vs the Benford PMF.](../figures/empirical_match.png)
 
-**World city populations.** The bundled GeoNames `cities5000` snapshot lists ~68,000 cities with at least 5,000 inhabitants. The empirical $\hat P(1) \approx 0.31$, $\hat P(9) \approx 0.06$, monotonically decreasing apart from a small spike at $d = 5$ (an artefact of the 5,000-population cutoff — every city *just* over the threshold has a leading 5). This is the canonical example: real geographic data spanning many orders of magnitude (~$10^3$ to $10^7$), drawn from the same multiplicative growth process across continents.
+**World city populations.** The bundled GeoNames `cities5000` snapshot lists about 68,000 cities with at least 5,000 inhabitants. The empirical $\hat P(1) \approx 0.31$, $\hat P(9) \approx 0.06$, monotonically decreasing apart from a small spike at $d = 5$ (an artefact of the 5,000-population cutoff — every city *just* over the threshold has a leading 5). This is the canonical example: real geographic data spanning many orders of magnitude (from $10^3$ to $10^7$), drawn from the same multiplicative growth process across continents.
 
-**Fibonacci numbers.** $F_1, \ldots, F_{1000}$, computed via Binet's closed form. The first-digit distribution is *exactly* Benford in the limit: Weyl's equidistribution theorem says the sequence $n \log_{10}(\varphi) \bmod 1$ is equidistributed on $[0, 1)$, and §3 will turn that into the Benford PMF directly. Even at $n = 1000$ the empirical fit is within ~4 % per cell.
+**Fibonacci numbers.** $F_1, \ldots, F_{1000}$, computed via Binet's closed form. The first-digit distribution is *exactly* Benford in the limit: Weyl's equidistribution theorem says the fractional part of $n \log_{10}(\varphi)$ is equidistributed on $[0, 1)$, and §3 will turn that into the Benford PMF directly. Even at $n = 1000$ the empirical fit is within about 4 % per cell.
 
-**Adult heights.** Synthetic, $n = 10{,}000$, $\mathcal{N}(170, 10)$ centimetres. *Not* Benford: the data span less than one order of magnitude (most values lie between 150 and 190 cm), so the leading-digit distribution collapses to "almost everything starts with 1". $\hat P(1) > 0.55$, several digits absent entirely. This is the negative control — the class of data Benford explicitly does not apply to.
+**Adult heights.** Synthetic, $n = 10{,}000$, $\mathcal{N}(170, 10)$ centimetres. *Not* Benford: with practically every value between 150 and 190 cm, every value starts with 1, and the corresponding panel of the figure shows exactly that — a single tall blue bar at $d = 1$ and zeros for every other digit, while the orange Benford curve fans out from $1$ to $9$. The visual contrast is the point: that lone bar is what an additive, single-order-of-magnitude dataset looks like, well outside the regime where the law applies. $\hat P(1) > 0.55$ and several digits are absent entirely. This is the negative control — the class of data Benford explicitly does not apply to.
 
 The three curves capture the operating range. Benford appears wherever the data span several orders of magnitude *multiplicatively*. It fails where the data live on an additive scale of similar quantities (heights, IQ scores, exam grades). The next two sections derive the mathematical reason for this divide.
 
@@ -67,7 +67,7 @@ So far this is bookkeeping. The probabilistic premise is the next sentence.
 If we accept this, the first-digit distribution falls out of one line:
 
 $$
-P(D = d) \;=\; \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] \;=\; \log_{10}(d + 1) - \log_{10}(d) \;=\; \log_{10}\!\left(1 + \frac{1}{d}\right).
+P(D = d) \;=\; \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] \;=\; \log_{10}(d + 1) - \log_{10}(d) \;=\; \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
 That is the entire derivation.
@@ -78,7 +78,7 @@ The substantive question is *why* the premise should hold. Three arguments:
 
 **Multiplicative processes.** Many natural quantities are products of independent factors: a city's population at year $t$ is $p_0 \prod_i (1 + r_i)$ for growth rates $r_i$. Taking logs turns the product into a sum, and the central limit theorem makes $\log_{10}(X)$ approximately Gaussian — but with a variance that grows with the number of factors. As the variance grows, the *fractional part* $Y$ approaches uniform on $[0, 1)$ regardless of where the mean sits. Most of Benford's twenty datasets are multiplicative in this sense.
 
-**Equidistribution.** For a deterministic sequence like $X_n = a^n$ with $\log_{10}(a)$ irrational, Weyl's equidistribution theorem says $\{n \log_{10}(a)\} \bmod 1$ is equidistributed on $[0, 1)$. The first-digit empirical distribution converges *exactly* to Benford. Fibonacci is the cleanest example: $F_n \sim \varphi^n / \sqrt{5}$, and $\log_{10}(\varphi)$ is irrational.
+**Equidistribution.** For a deterministic sequence like $X_n = a^n$ with $\log_{10}(a)$ irrational, Weyl's equidistribution theorem says the fractional part of $n \log_{10}(a)$ is equidistributed on $[0, 1)$. The first-digit empirical distribution converges *exactly* to Benford. Fibonacci is the cleanest example: $F_n \sim \varphi^n / \sqrt{5}$, and $\log_{10}(\varphi)$ is irrational.
 
 **Measure-theoretic uniqueness.** Translation-invariant probability measures on the circle $\mathbb{R}/\mathbb{Z}$ are unique up to normalisation (Haar measure). Section 4 turns this remark into Pinkham's derivation.
 
@@ -92,7 +92,7 @@ So the first derivation answers the question "*given* a log-uniform mantissa, wh
 
 Currency is the cleanest motivation. Take a dataset of revenues in BRL. Convert to USD by multiplying every entry by some exchange rate $c$. The leading-digit distribution should not change just because we relabelled the unit. Formally:
 
-> **Scale invariance.** $\Pr[D(cX) = d] = \Pr[D(X) = d]$ for every $c > 0$ and every $d \in \{1, \ldots, 9\}$.
+> **Scale invariance.** $\Pr[D(cX) = d] = \Pr[D(X) = d]$ for every $c > 0$ and every digit $d$ from $1$ to $9$.
 
 This is a strong constraint. It rules out, for example, the uniform distribution on digits — uniform under one currency will not be uniform after multiplying every value by $\pi$.
 
@@ -115,7 +115,7 @@ $$
 Restricting to $[10^k, 10^{k+1})$,
 
 $$
-P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\!\left(1 + \frac{1}{d}\right).
+P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
 The factor $10^k$ cancels. That cancellation *is* the scale invariance, made arithmetic.
@@ -124,7 +124,7 @@ The factor $10^k$ cancels. That cancellation *is* the scale invariance, made ari
 
 Two corollaries worth flagging:
 
-**Base invariance.** Repeating the derivation in base $b > 1$ gives $P_b(d) = \log_b(1 + 1/d)$ for $d \in \{1, \ldots, b-1\}$. In octal, $P_8(1) = \log_8 2 = 1/3$, slightly more than the decimal $P_{10}(1) \approx 0.301$. Same shape, different support. The choice of base 10 is a notational artefact; the law is structural.
+**Base invariance.** Repeating the derivation in base $b > 1$ gives $P_b(d) = \log_b(1 + 1/d)$ for $d = 1, 2, \ldots, b-1$. In octal, $P_8(1) = \log_8 2 = 1/3$, slightly more than the decimal $P_{10}(1) \approx 0.301$. Same shape, different support. The choice of base 10 is a notational artefact; the law is structural.
 
 **Why two derivations matter.** §3 starts from a probabilistic premise (log-uniform mantissa) and lands on $\log_{10}(1 + 1/d)$. §4 starts from a structural premise (no preferred unit) and lands on $\log_{10}(1 + 1/d)$. §4 *implies* §3's premise, so the two are not literally independent — but they are *structurally* different. The fact that two unrelated assumptions converge on the same formula is the strongest evidence that the law is not an empirical accident.
 
@@ -144,13 +144,13 @@ $$
 \chi^2 = \sum_{d=1}^{9} \frac{(O_d - n P(d))^2}{n P(d)}
 $$
 
-is asymptotically $\chi^2_8$ — the constraint $\sum_d O_d = n$ removes one degree of freedom from the nine cells. Reject at $\alpha = 0.05$ if $\chi^2 > 15.51$. Chi-squared is the honest hypothesis test for moderate $n$, but it has a known defect: at very large $n$ ($\sim 10^6$), even microscopic deviations (~0.001 per cell) become "statistically significant". The test answers the question "is the deviation literally zero?", which is rarely the question of interest in practice.
+is asymptotically $\chi^2_8$ — the constraint $\sum_d O_d = n$ removes one degree of freedom from the nine cells. Reject at $\alpha = 0.05$ if $\chi^2 > 15.51$. Chi-squared is the honest hypothesis test for moderate $n$, but it has a known defect: at very large $n$ (on the order of $10^6$), even microscopic deviations (about $0.001$ per cell) become "statistically significant". The test answers the question "is the deviation literally zero?", which is rarely the question of interest in practice.
 
 **Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, where $F$ is the cumulative Benford CDF. Sensitive to *systematic* drift across the cells in a way $\chi^2$ averages away. The asymptotic Kolmogorov distribution gives a p-value via $\sqrt{n}\, D_n$, but it is conservative on a discrete distribution — useful as a diagnostic, not as a sharp test.
 
 **MAD with Nigrini's thresholds.** The simplest statistic, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, is **sample-size invariant**: a given proportion vector yields the same value at $n = 1{,}000$ or $n = 10^7$. Mark Nigrini's *Benford's Law* (Wiley, 2012) calibrates a verdict scale: $< 0.006$ "close conformity"; $< 0.012$ "acceptable"; $< 0.015$ "marginally acceptable"; $\ge 0.015$ "non-conformity". MAD has no formal sampling distribution and no p-value — but it is the only one of the four that scales sensibly to forensic-audit datasets where $n \gg 10^5$.
 
-**Per-digit $Z$.** For each $d$, treat $O_d \sim \mathrm{Binomial}(n, P(d))$ and compute the standardized two-sided $z_d$ (with Yates' continuity correction). Reject at $\alpha = 0.05$ if $|z_d| > 1.96$. Per-digit $Z$ does not control the family-wise error rate across the nine cells — it is a *diagnostic*: if cell 1 alone is flagged, the data are short of leading 1s; if $\{8, 9\}$ are flagged, the data show round-number bias.
+**Per-digit $Z$.** For each $d$, treat $O_d \sim \mathrm{Binomial}(n, P(d))$ and compute the standardized two-sided $z_d$ (with Yates' continuity correction). Reject at $\alpha = 0.05$ if $|z_d| > 1.96$. Per-digit $Z$ does not control the family-wise error rate across the nine cells — it is a *diagnostic*: if cell 1 alone is flagged, the data are short of leading 1s; if cells 8 and 9 are flagged, the data show round-number bias.
 
 The rule for choosing among the four:
 
@@ -173,7 +173,7 @@ Phase 5 closes the loop. Take a clean Benford-conforming dataset, replace a frac
 
 The fabricated batch is calibrated to look superficially plausible: drawn over the same magnitude window as the original data, so the fraud signal lives in the *digit distribution* and not in the order of magnitude. Three fabrication strategies are implemented in `src.fraud`:
 
-1. **Uniform-digit.** Each leading digit appears ~11.1 %. The textbook violation.
+1. **Uniform-digit.** Each leading digit appears in about $11.1\,\%$ of the entries. The textbook violation.
 2. **Round numbers.** Values cluster at $100, 200, 250, 500, 1{,}000, 2{,}000, 5{,}000, 10{,}000$, mimicking the fraudster who rounds mentally.
 3. **Psychological.** Humans asked to write "random" numbers over-pick the mid digits 3–6 and under-pick 1 and 9.
 
@@ -183,7 +183,7 @@ Sweeping the contamination fraction from 0 % to 100 % and running the four-test 
 
 The MAD curve climbs through Nigrini's verdict tiers (acceptable → marginally acceptable → non-conformity) within the first 5–10 % of contamination. The Pearson $\chi^2$ statistic — log-scale — climbs steeply through its $\alpha = 0.05$ critical value of 15.51 at roughly the same point. The empirical rejection rate at $\alpha = 0.05$ saturates near 1 for all three fabrication kinds by 10–15 % contamination.
 
-The reading: at this sample size, a Benford-style audit reliably detects fraud whenever 10 % or more of the entries are fabricated by any of the three strategies. Below 5 %, detection power varies — round-number fabrication is the hardest to catch because it preserves the leading-digit bias of Benford while displacing it onto $\{1, 2, 5\}$.
+The reading: at this sample size, a Benford-style audit reliably detects fraud whenever 10 % or more of the entries are fabricated by any of the three strategies. Below 5 %, detection power varies — round-number fabrication is the hardest to catch because it preserves the leading-digit bias of Benford while displacing it onto digits $1$, $2$ and $5$.
 
 This experiment is not just a toy. Documented historical cases include:
 
