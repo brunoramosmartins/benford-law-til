@@ -26,9 +26,9 @@ The rest is detail.
 
 ## 2. Empirical Benford in three datasets
 
-Three datasets, three regimes, one curve.
+Before any derivation it is worth pausing on the data. Benford lined up twenty heterogeneous datasets to show the logarithmic curve was empirical rather than invented; I will repeat the gesture at smaller scale with three datasets chosen to cover three distinct regimes. The first is a messy real-world case — world city populations — where the generating process is multiplicative and spans several orders of magnitude. The second is a clean analytic sequence — Fibonacci — where Benford appears as a theorem rather than as luck. The third is a deliberate negative control — adult heights — where the law *should not* appear, and the corresponding panel pins down what fails when the multiplicative regime is dropped. The figure below overlays, in each panel, the empirical first-digit frequency (blue) and the theoretical Benford PMF (orange); the reader should look for the two series tracking each other in the first and second panels, and for the glaring discrepancy in the third.
 
-![Empirical first-digit distributions vs the Benford PMF.](../figures/empirical_match.png)
+![Empirical first-digit distributions vs the Benford PMF, across three datasets in distinct regimes.](../figures/empirical_match.png)
 
 **World city populations.** The bundled GeoNames `cities5000` snapshot lists about 68,000 cities with at least 5,000 inhabitants. The empirical $\hat P(1) \approx 0.31$, $\hat P(9) \approx 0.06$, monotonically decreasing apart from a small spike at $d = 5$ (an artefact of the 5,000-population cutoff — every city *just* over the threshold has a leading 5). This is the canonical example: real geographic data spanning many orders of magnitude (from $10^3$ to $10^7$), drawn from the same multiplicative growth process across continents.
 

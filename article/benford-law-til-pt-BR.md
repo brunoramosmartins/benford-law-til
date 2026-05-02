@@ -32,9 +32,9 @@ O resto é detalhe.
 
 ## 2. Benford empírico em três conjuntos de dados
 
-Três conjuntos de dados, três regimes, uma curva.
+Antes de qualquer derivação vale parar para olhar os dados. Benford alinhou vinte conjuntos heterogêneos para mostrar que a curva logarítmica era empírica, não inventada; vou repetir o gesto em escala menor com três conjuntos escolhidos para cobrir três regimes distintos. O primeiro é um caso real desordenado — populações de cidades do mundo —, em que o processo gerador é multiplicativo e cobre várias ordens de magnitude. O segundo é uma sequência analítica limpa — Fibonacci — onde Benford aparece como teorema, não como acaso. O terceiro é um controle negativo deliberado — alturas de adultos — em que a lei *não deve* aparecer, e o painel correspondente serve para fixar o que falha quando o regime multiplicativo é abandonado. A figura abaixo sobrepõe, em cada painel, a frequência empírica de primeiro dígito (azul) e a PMF teórica de Benford (laranja); o que o leitor deve buscar é a aderência das duas séries no primeiro e no segundo painel, e a discrepância gritante no terceiro.
 
-![Distribuições empíricas de primeiro dígito vs a PMF de Benford.](../figures/empirical_match.png)
+![Distribuições empíricas de primeiro dígito vs a PMF de Benford, em três conjuntos com regimes distintos.](../figures/empirical_match.png)
 
 **Populações de cidades do mundo.** O snapshot empacotado do GeoNames `cities5000` lista cerca de 68.000 cidades com pelo menos 5.000 habitantes. O empírico $\hat P(1) \approx 0{,}31$, $\hat P(9) \approx 0{,}06$, monotonamente decrescente exceto por um pequeno pico em $d = 5$ (artefato do corte de 5.000 habitantes — toda cidade *logo acima* do limiar tem 5 inicial). Este é o exemplo canônico: dados geográficos reais cobrindo várias ordens de magnitude (de $10^3$ a $10^7$), originados do mesmo processo multiplicativo de crescimento entre continentes.
 
