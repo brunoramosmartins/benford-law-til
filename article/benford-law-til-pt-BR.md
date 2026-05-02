@@ -4,6 +4,12 @@
 
 ---
 
+## Por que escrever sobre isso
+
+Reli *O Andar do Bêbado* recentemente e voltei a tropeçar no parágrafo em que Mlodinow menciona, quase de passagem, a Lei de Benford — aquela ideia desconfortável de que o primeiro dígito de "qualquer" conjunto de dados naturais não é distribuído uniformemente, mas segue uma curva logarítmica. Da primeira leitura eu havia aceitado o fato como curiosidade; desta vez quis entender por que. O que começou como uma anotação de margem virou este TIL: uma tentativa honesta de reconstruir a lei a partir de dois argumentos independentes, ver os dados se ajustarem à curva, e fechar o ciclo com uma aplicação concreta — detecção de fraude. O que segue é o caderno limpo dessa releitura.
+
+---
+
 ## 1. As páginas gastas de uma tábua de logaritmos
 
 Em 1881 o astrônomo Simon Newcomb percebeu algo estranho ao folhear seu exemplar de uma tábua de logaritmos. As primeiras páginas — aquelas para números começando com 1 — estavam imundas e com as pontas dobradas; as últimas páginas, para números começando com 9, estavam limpas e intactas. Uma tábua de logaritmos é a mais teimosamente mecânica das referências. Não há enredo, nem narrativa, nenhuma forma de alguns capítulos serem mais interessantes que outros. Por que, então, as primeiras páginas estavam gastas?
@@ -11,7 +17,7 @@ Em 1881 o astrônomo Simon Newcomb percebeu algo estranho ao folhear seu exempla
 Newcomb escreveu uma nota de duas páginas no *American Journal of Mathematics* argumentando que o primeiro dígito significativo de dados numéricos "naturais" não é uniforme, mas logarítmico:
 
 $$
-P(d) = \log_{10}\!\left(1 + \frac{1}{d}\right), \qquad d \in \{1, 2, \ldots, 9\}.
+P(d) = \log_{10}\left(1 + \frac{1}{d}\right), \qquad d = 1, 2, \ldots, 9.
 $$
 
 O 1 inicial deveria aparecer cerca de 30,1 % das vezes; o 9 inicial, menos de 5 %. A "demonstração" de Newcomb era uma heurística sobre a mantissa de um número aleatório ser uniforme; ele não apresentou argumento formal nem dados empíricos, e a nota deslizou para a obscuridade.
@@ -30,11 +36,11 @@ Três conjuntos de dados, três regimes, uma curva.
 
 ![Distribuições empíricas de primeiro dígito vs a PMF de Benford.](../figures/empirical_match.png)
 
-**Populações de cidades do mundo.** O snapshot empacotado do GeoNames `cities5000` lista ~68.000 cidades com pelo menos 5.000 habitantes. O empírico $\hat P(1) \approx 0{,}31$, $\hat P(9) \approx 0{,}06$, monotonamente decrescente exceto por um pequeno pico em $d = 5$ (artefato do corte de 5.000 habitantes — toda cidade *logo acima* do limiar tem 5 inicial). Este é o exemplo canônico: dados geográficos reais cobrindo várias ordens de magnitude (~$10^3$ a $10^7$), originados do mesmo processo multiplicativo de crescimento entre continentes.
+**Populações de cidades do mundo.** O snapshot empacotado do GeoNames `cities5000` lista cerca de 68.000 cidades com pelo menos 5.000 habitantes. O empírico $\hat P(1) \approx 0{,}31$, $\hat P(9) \approx 0{,}06$, monotonamente decrescente exceto por um pequeno pico em $d = 5$ (artefato do corte de 5.000 habitantes — toda cidade *logo acima* do limiar tem 5 inicial). Este é o exemplo canônico: dados geográficos reais cobrindo várias ordens de magnitude (de $10^3$ a $10^7$), originados do mesmo processo multiplicativo de crescimento entre continentes.
 
-**Números de Fibonacci.** $F_1, \ldots, F_{1000}$, computados via fórmula fechada de Binet. A distribuição de primeiro dígito é *exatamente* Benford no limite: o teorema da equidistribuição de Weyl diz que a sequência $n \log_{10}(\varphi) \bmod 1$ é equidistribuída em $[0, 1)$, e a §3 transformará isso na PMF de Benford diretamente. Mesmo para $n = 1000$ o ajuste empírico fica dentro de ~4 % por célula.
+**Números de Fibonacci.** $F_1, \ldots, F_{1000}$, computados via fórmula fechada de Binet. A distribuição de primeiro dígito é *exatamente* Benford no limite: o teorema da equidistribuição de Weyl diz que a sequência $n \log_{10}(\varphi) \bmod 1$ é equidistribuída em $[0, 1)$, e a §3 transformará isso na PMF de Benford diretamente. Mesmo para $n = 1000$ o ajuste empírico fica dentro de cerca de 4 % por célula.
 
-**Alturas de adultos.** Sintético, $n = 10{.}000$, $\mathcal{N}(170, 10)$ centímetros. *Não* é Benford: os dados cobrem menos de uma ordem de magnitude (a maior parte dos valores fica entre 150 e 190 cm), de modo que a distribuição de primeiro dígito colapsa em "quase tudo começa com 1". $\hat P(1) > 0{,}55$, vários dígitos completamente ausentes. Este é o controle negativo — a classe de dados a que Benford explicitamente não se aplica.
+**Alturas de adultos.** Sintético, $n = 10{.}000$, $\mathcal{N}(170, 10)$ centímetros. *Não* é Benford: como praticamente todos os valores ficam entre 150 e 190 cm, todos começam com 1, e o painel correspondente do gráfico mostra exatamente isso — uma única barra azul gigante em $d = 1$ e zeros nos demais dígitos, enquanto a curva laranja de Benford se espalha do 1 ao 9. O contraste visual é o ponto: a barra solitária revela um conjunto que vive em escala aditiva, em uma única ordem de magnitude, e portanto está fora do regime onde a lei se aplica. $\hat P(1) > 0{,}55$ e vários dígitos ficam ausentes por completo. Este é o controle negativo — a classe de dados a que Benford explicitamente não se aplica.
 
 As três curvas capturam a faixa operacional. Benford aparece sempre que os dados cobrem várias ordens de magnitude *multiplicativamente*. Falha onde os dados vivem numa escala aditiva de quantidades semelhantes (alturas, pontuações de QI, notas de prova). As próximas duas seções derivam a razão matemática para essa divisão.
 
@@ -67,7 +73,7 @@ Até aqui é apenas notação. A premissa probabilística é a próxima frase.
 Se aceitamos isso, a distribuição de primeiro dígito sai numa única linha:
 
 $$
-P(D = d) \;=\; \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] \;=\; \log_{10}(d + 1) - \log_{10}(d) \;=\; \log_{10}\!\left(1 + \frac{1}{d}\right).
+P(D = d) \;=\; \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] \;=\; \log_{10}(d + 1) - \log_{10}(d) \;=\; \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
 Essa é toda a derivação.
@@ -78,7 +84,7 @@ A questão substantiva é *por que* a premissa deveria valer. Três argumentos:
 
 **Processos multiplicativos.** Muitas quantidades naturais são produtos de fatores independentes: a população de uma cidade no ano $t$ é $p_0 \prod_i (1 + r_i)$ para taxas de crescimento $r_i$. Tomar logaritmos transforma o produto em soma, e o teorema central do limite faz $\log_{10}(X)$ aproximadamente gaussiano — mas com variância que cresce com o número de fatores. À medida que a variância cresce, a *parte fracionária* $Y$ se aproxima da uniforme em $[0, 1)$ independentemente de onde a média esteja. A maioria dos vinte conjuntos de Benford é multiplicativa nesse sentido.
 
-**Equidistribuição.** Para uma sequência determinística como $X_n = a^n$ com $\log_{10}(a)$ irracional, o teorema da equidistribuição de Weyl diz que $\{n \log_{10}(a)\} \bmod 1$ é equidistribuída em $[0, 1)$. A distribuição empírica de primeiro dígito converge *exatamente* para Benford. Fibonacci é o exemplo mais limpo: $F_n \sim \varphi^n / \sqrt{5}$, e $\log_{10}(\varphi)$ é irracional.
+**Equidistribuição.** Para uma sequência determinística como $X_n = a^n$ com $\log_{10}(a)$ irracional, o teorema da equidistribuição de Weyl diz que a parte fracionária de $n \log_{10}(a)$ é equidistribuída em $[0, 1)$. A distribuição empírica de primeiro dígito converge *exatamente* para Benford. Fibonacci é o exemplo mais limpo: $F_n \sim \varphi^n / \sqrt{5}$, e $\log_{10}(\varphi)$ é irracional.
 
 **Unicidade teórico-medida.** Medidas de probabilidade invariantes por translação no círculo $\mathbb{R}/\mathbb{Z}$ são únicas a menos de normalização (medida de Haar). A seção 4 transforma essa observação na derivação de Pinkham.
 
@@ -92,7 +98,7 @@ Logo a primeira derivação responde à pergunta "*dada* uma mantissa log-unifor
 
 Moeda é a motivação mais limpa. Tome um conjunto de receitas em BRL. Converta para USD multiplicando cada entrada por alguma taxa de câmbio $c$. A distribuição de primeiro dígito não deveria mudar só porque rotulamos a unidade de outra forma. Formalmente:
 
-> **Invariância de escala.** $\Pr[D(cX) = d] = \Pr[D(X) = d]$ para todo $c > 0$ e todo $d \in \{1, \ldots, 9\}$.
+> **Invariância de escala.** $\Pr[D(cX) = d] = \Pr[D(X) = d]$ para todo $c > 0$ e todo dígito $d$ de $1$ a $9$.
 
 É uma restrição forte. Exclui, por exemplo, a distribuição uniforme nos dígitos — uniforme em uma moeda não será uniforme depois de multiplicar cada valor por $\pi$.
 
@@ -115,7 +121,7 @@ $$
 Restringindo a $[10^k, 10^{k+1})$,
 
 $$
-P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\!\left(1 + \frac{1}{d}\right).
+P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
 O fator $10^k$ cancela. Esse cancelamento *é* a invariância de escala, em forma aritmética.
@@ -124,7 +130,7 @@ O fator $10^k$ cancela. Esse cancelamento *é* a invariância de escala, em form
 
 Dois corolários que merecem destaque:
 
-**Invariância de base.** Repetindo a derivação na base $b > 1$ obtemos $P_b(d) = \log_b(1 + 1/d)$ para $d \in \{1, \ldots, b-1\}$. Em octal, $P_8(1) = \log_8 2 = 1/3$, ligeiramente mais que o decimal $P_{10}(1) \approx 0{,}301$. Mesma forma, suporte distinto. A escolha da base 10 é um artefato notacional; a lei é estrutural.
+**Invariância de base.** Repetindo a derivação na base $b > 1$ obtemos $P_b(d) = \log_b(1 + 1/d)$ para $d = 1, 2, \ldots, b-1$. Em octal, $P_8(1) = \log_8 2 = 1/3$, ligeiramente mais que o decimal $P_{10}(1) \approx 0{,}301$. Mesma forma, suporte distinto. A escolha da base 10 é um artefato notacional; a lei é estrutural.
 
 **Por que duas derivações importam.** A §3 parte de uma premissa probabilística (mantissa log-uniforme) e aterrissa em $\log_{10}(1 + 1/d)$. A §4 parte de uma premissa estrutural (sem unidade preferida) e aterrissa em $\log_{10}(1 + 1/d)$. A §4 *implica* a premissa da §3, então as duas não são literalmente independentes — mas são *estruturalmente* distintas. O fato de duas hipóteses não correlacionadas convergirem para a mesma fórmula é a evidência mais forte de que a lei não é um acidente empírico.
 
@@ -144,13 +150,13 @@ $$
 \chi^2 = \sum_{d=1}^{9} \frac{(O_d - n P(d))^2}{n P(d)}
 $$
 
-é assintoticamente $\chi^2_8$ — a restrição $\sum_d O_d = n$ remove um grau de liberdade das nove células. Rejeita-se em $\alpha = 0{,}05$ se $\chi^2 > 15{,}51$. O qui-quadrado é o teste de hipótese honesto para $n$ moderado, mas tem uma falha conhecida: para $n$ muito grande ($\sim 10^6$), até desvios microscópicos (~0,001 por célula) tornam-se "estatisticamente significativos". O teste responde "o desvio é literalmente zero?", o que raramente é a pergunta de interesse na prática.
+é assintoticamente $\chi^2_8$ — a restrição $\sum_d O_d = n$ remove um grau de liberdade das nove células. Rejeita-se em $\alpha = 0{,}05$ se $\chi^2 > 15{,}51$. O qui-quadrado é o teste de hipótese honesto para $n$ moderado, mas tem uma falha conhecida: para $n$ muito grande (da ordem de $10^6$), até desvios microscópicos (em torno de $0{,}001$ por célula) tornam-se "estatisticamente significativos". O teste responde "o desvio é literalmente zero?", o que raramente é a pergunta de interesse na prática.
 
 **Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, onde $F$ é a CDF cumulativa de Benford. Sensível a *deriva sistemática* ao longo das células de modo que o $\chi^2$ dilui na média. A distribuição assintótica de Kolmogorov fornece um p-valor via $\sqrt{n}\, D_n$, mas é conservadora numa distribuição discreta — útil como diagnóstico, não como teste afiado.
 
 **MAD com limiares de Nigrini.** A estatística mais simples, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, é **invariante ao tamanho da amostra**: um vetor de proporções produz o mesmo valor para $n = 1{.}000$ ou $n = 10^7$. *Benford's Law* (Wiley, 2012) de Mark Nigrini calibra uma escala de veredito: $< 0{,}006$ "conformidade próxima"; $< 0{,}012$ "aceitável"; $< 0{,}015$ "marginalmente aceitável"; $\ge 0{,}015$ "não-conformidade". MAD não tem distribuição amostral formal nem p-valor — mas é o único dos quatro que escala razoavelmente para dados de auditoria forense onde $n \gg 10^5$.
 
-**$Z$ por dígito.** Para cada $d$, trate $O_d \sim \mathrm{Binomial}(n, P(d))$ e calcule o $z_d$ bilateral padronizado (com correção de continuidade de Yates). Rejeita-se em $\alpha = 0{,}05$ se $|z_d| > 1{,}96$. O $Z$ por dígito não controla a taxa de erro familiar entre as nove células — é um *diagnóstico*: se só a célula 1 é sinalizada, faltam 1s iniciais nos dados; se $\{8, 9\}$ são sinalizadas, os dados mostram viés de números redondos.
+**$Z$ por dígito.** Para cada $d$, trate $O_d \sim \mathrm{Binomial}(n, P(d))$ e calcule o $z_d$ bilateral padronizado (com correção de continuidade de Yates). Rejeita-se em $\alpha = 0{,}05$ se $|z_d| > 1{,}96$. O $Z$ por dígito não controla a taxa de erro familiar entre as nove células — é um *diagnóstico*: se só a célula 1 é sinalizada, faltam 1s iniciais nos dados; se as células 8 e 9 são sinalizadas, os dados mostram viés de números redondos.
 
 A regra para escolher entre os quatro:
 
@@ -173,7 +179,7 @@ A Fase 5 fecha o ciclo. Pegue um conjunto limpo, conforme a Benford, substitua u
 
 A leva fabricada é calibrada para parecer superficialmente plausível: amostrada na mesma janela de magnitude dos dados originais, de modo que o sinal de fraude vive na *distribuição de dígitos* e não na ordem de grandeza. Três estratégias de fabricação estão implementadas em `src.fraud`:
 
-1. **Dígito uniforme.** Cada dígito inicial aparece ~11,1 %. A violação de manual.
+1. **Dígito uniforme.** Cada dígito inicial aparece em cerca de $11{,}1\,\%$ das entradas. A violação de manual.
 2. **Números redondos.** Valores se concentram em $100, 200, 250, 500, 1{.}000, 2{.}000, 5{.}000, 10{.}000$, imitando o fraudador que arredonda mentalmente.
 3. **Psicológica.** Humanos pedidos para escrever números "aleatórios" superestimam os dígitos médios 3–6 e subestimam 1 e 9.
 
@@ -183,7 +189,7 @@ Varrendo a fração de contaminação de 0 % a 100 % e rodando o bundle dos quat
 
 A curva MAD sobe pelos níveis de veredito de Nigrini (aceitável → marginalmente aceitável → não-conformidade) dentro dos primeiros 5–10 % de contaminação. A estatística $\chi^2$ de Pearson — em escala logarítmica — sobe íngreme através do seu valor crítico $\alpha = 0{,}05$ de 15,51 mais ou menos no mesmo ponto. A taxa empírica de rejeição em $\alpha = 0{,}05$ satura próxima de 1 para as três estratégias por volta de 10–15 % de contaminação.
 
-A leitura: nesse tamanho amostral, uma auditoria estilo Benford detecta de modo confiável fraude sempre que 10 % ou mais das entradas forem fabricadas por qualquer das três estratégias. Abaixo de 5 %, o poder de detecção varia — fabricação por números redondos é a mais difícil de pegar porque preserva o viés de dígito inicial de Benford ao mesmo tempo em que o desloca para $\{1, 2, 5\}$.
+A leitura: nesse tamanho amostral, uma auditoria estilo Benford detecta de modo confiável fraude sempre que 10 % ou mais das entradas forem fabricadas por qualquer das três estratégias. Abaixo de 5 %, o poder de detecção varia — fabricação por números redondos é a mais difícil de pegar porque preserva o viés de dígito inicial de Benford ao mesmo tempo em que o desloca para os dígitos $1$, $2$ e $5$.
 
 Este experimento não é apenas um brinquedo. Casos históricos documentados incluem:
 
