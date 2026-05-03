@@ -32,9 +32,9 @@ O resto é detalhe.
 
 ## 2. Benford empírico em três conjuntos de dados
 
-Três conjuntos de dados, três regimes, uma curva.
+Antes de qualquer derivação vale parar para olhar os dados. Benford alinhou vinte conjuntos heterogêneos para mostrar que a curva logarítmica era empírica, não inventada; vou repetir o gesto em escala menor com três conjuntos escolhidos para cobrir três regimes distintos. O primeiro é um caso real desordenado — populações de cidades do mundo —, em que o processo gerador é multiplicativo e cobre várias ordens de magnitude. O segundo é uma sequência analítica limpa — Fibonacci — onde Benford aparece como teorema, não como acaso. O terceiro é um controle negativo deliberado — alturas de adultos — em que a lei *não deve* aparecer, e o painel correspondente serve para fixar o que falha quando o regime multiplicativo é abandonado. A figura abaixo sobrepõe, em cada painel, a frequência empírica de primeiro dígito (azul) e a PMF teórica de Benford (laranja); o que o leitor deve buscar é a aderência das duas séries no primeiro e no segundo painel, e a discrepância gritante no terceiro.
 
-![Distribuições empíricas de primeiro dígito vs a PMF de Benford.](../figures/empirical_match.png)
+![Distribuições empíricas de primeiro dígito vs a PMF de Benford, em três conjuntos com regimes distintos.](../figures/empirical_match.png)
 
 **Populações de cidades do mundo.** O snapshot empacotado do GeoNames `cities5000` lista cerca de 68.000 cidades com pelo menos 5.000 habitantes. O empírico $\hat P(1) \approx 0{,}31$, $\hat P(9) \approx 0{,}06$, monotonamente decrescente exceto por um pequeno pico em $d = 5$ (artefato do corte de 5.000 habitantes — toda cidade *logo acima* do limiar tem 5 inicial). Este é o exemplo canônico: dados geográficos reais cobrindo várias ordens de magnitude (de $10^3$ a $10^7$), originados do mesmo processo multiplicativo de crescimento entre continentes.
 
@@ -48,37 +48,45 @@ As três curvas capturam a faixa operacional. Benford aparece sempre que os dado
 
 ## 3. Primeira derivação: a mantissa é uniforme em $[0, 1)$
 
+A intuição original de Newcomb era de natureza geométrica: o primeiro dígito de um número depende apenas de onde ele cai dentro de uma "década" — o intervalo entre duas potências consecutivas de dez. Para tornar essa intuição precisa precisamos de uma coordenada que enxergue só essa posição relativa, ignorando a ordem de magnitude. O logaritmo faz exatamente isso, e dele sai a derivação inteira em poucos passos.
+
 Escreva qualquer real positivo $X$ em notação científica:
 
 $$
 X = r \cdot 10^k, \qquad r \in [1, 10), \quad k \in \mathbb{Z}.
 $$
 
-O fator $r$ é a **mantissa** e $k$ a ordem de magnitude. O primeiro dígito significativo de $X$ é simplesmente $\lfloor r \rfloor$. Tome logaritmos:
+O fator $r$ é a **mantissa** e $k$ a ordem de magnitude. O primeiro dígito significativo de $X$ é simplesmente $\lfloor r \rfloor$ (a *função piso*, que retorna o maior inteiro menor ou igual a $r$); denotamos essa operação por $D(X) := \lfloor r \rfloor$ e, quando $X$ for aleatório, tratamos $D$ como variável aleatória derivada — é o objeto cuja distribuição queremos descobrir. Toda a informação relevante para nossa pergunta vive em $r$: multiplicar $X$ por uma potência de dez muda $k$ mas não toca em $r$, nem no primeiro dígito. Tomando logaritmos transformamos esse fato em álgebra:
 
 $$
 \log_{10}(X) = \log_{10}(r) + k, \qquad \log_{10}(r) \in [0, 1).
 $$
 
-Defina a **log-mantissa** $Y = \log_{10}(X) \bmod 1$. Por construção $Y \in [0, 1)$, e o primeiro dígito de $X$ é determinado por qual subintervalo de $[0, 1)$ contém $Y$:
+A ordem de magnitude $k$ vira a parte inteira do logaritmo, e a parte fracionária guarda toda a informação sobre o primeiro dígito. Essa parte fracionária merece um nome próprio. Defina a **log-mantissa** $Y = \log_{10}(X) \bmod 1$. Por construção $Y \in [0, 1)$, e o intervalo $[0, 1)$ se particiona naturalmente em nove subintervalos, um para cada dígito inicial:
 
 $$
 D(X) = d \iff \log_{10}(d) \le Y < \log_{10}(d + 1).
 $$
 
-Até aqui é apenas notação. A premissa probabilística é a próxima frase.
+O comprimento do $d$-ésimo subintervalo é exatamente $\log_{10}(d+1) - \log_{10}(d) = \log_{10}(1 + 1/d)$ — a fórmula de Benford já está lá, esperando uma medida de probabilidade que peso esses comprimentos. Até aqui, porém, tudo é tradução: nenhuma probabilidade foi introduzida. A passagem seguinte é o único lugar do argumento onde uma hipótese substantiva entra.
 
-> **Premissa (mantissa log-uniforme).** $Y \sim \mathrm{Uniforme}(0, 1)$.
-
-Se aceitamos isso, a distribuição de primeiro dígito sai numa única linha:
+**Premissa (mantissa log-uniforme).** Assuma que a log-mantissa $Y$ se distribui uniformemente em $[0, 1)$, isto é,
 
 $$
-P(D = d) \;=\; \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] \;=\; \log_{10}(d + 1) - \log_{10}(d) \;=\; \log_{10}\left(1 + \frac{1}{d}\right).
+Y \sim \mathrm{Uniforme}(0, 1).
 $$
 
-Essa é toda a derivação.
+Sob essa premissa, a probabilidade de $Y$ cair em um subintervalo é literalmente o comprimento desse subintervalo. A distribuição de primeiro dígito sai numa única linha:
 
-![Intuição da mantissa uniforme.](../figures/log_uniform_intuition.png)
+$$
+P(D = d) = \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] = \log_{10}(d + 1) - \log_{10}(d) = \log_{10}\left(1 + \frac{1}{d}\right).
+$$
+
+Essa é toda a derivação. O que parece um truque é estrutural: ao trocar a coordenada multiplicativa $X$ pela coordenada aditiva $Y$, transformamos a pergunta "qual é o primeiro dígito?" numa pergunta sobre comprimentos no círculo $[0, 1)$, e probabilidade uniforme nesse círculo se traduz diretamente na curva logarítmica.
+
+A figura abaixo torna o argumento tangível em dois movimentos. Na linha de cima, o histograma da log-mantissa $Y$ para amostras sintéticas $X = 10^U$ com $U \sim \mathrm{Uniforme}(0, k)$ é mostrado para $k = 0{,}5,\, 1{,}5,\, 3{,}5,\, 8{,}5$ — valores deliberadamente não-inteiros, para que a convergência seja visível. Em $k = 0{,}5$, $Y$ nem cobre $[0, 1)$ (toda a massa está em $[0; 0{,}5)$); em $k = 1{,}5$, há um degrau claro em $Y = 0{,}5$ (densidade $\approx 1{,}33$ na primeira metade contra $\approx 0{,}67$ na segunda); em $k = 3{,}5$ o degrau é mais brando; em $k = 8{,}5$ o histograma é visualmente plano. A diferença em relação à uniforme decai como $1/k$. Na linha de baixo, as frequências de primeiro dígito da amostra sintética com $k = 8{,}5$ (esquerda) e das populações de cidades do mundo (direita) assentam sobre a PMF de Benford: a premissa implica a curva, e dados reais multiescalares satisfazem a premissa.
+
+![Linha de cima: a log-mantissa Y converge à densidade uniforme conforme X cobre mais décadas (k = 0,5; 1,5; 3,5; 8,5). Linha de baixo: o primeiro dígito segue Benford, em dados sintéticos à esquerda e reais à direita.](../figures/log_uniform_intuition.png)
 
 A questão substantiva é *por que* a premissa deveria valer. Três argumentos:
 
@@ -98,14 +106,18 @@ Logo a primeira derivação responde à pergunta "*dada* uma mantissa log-unifor
 
 Moeda é a motivação mais limpa. Tome um conjunto de receitas em BRL. Converta para USD multiplicando cada entrada por alguma taxa de câmbio $c$. A distribuição de primeiro dígito não deveria mudar só porque rotulamos a unidade de outra forma. Formalmente:
 
-> **Invariância de escala.** $\Pr[D(cX) = d] = \Pr[D(X) = d]$ para todo $c > 0$ e todo dígito $d$ de $1$ a $9$.
+**Invariância de escala.** Para todo $c > 0$ e todo dígito $d$ de $1$ a $9$,
+
+$$
+\Pr[D(cX) = d] = \Pr[D(X) = d].
+$$
 
 É uma restrição forte. Exclui, por exemplo, a distribuição uniforme nos dígitos — uniforme em uma moeda não será uniforme depois de multiplicar cada valor por $\pi$.
 
 Tome logaritmos novamente. Com $Y = \log_{10}(X) \bmod 1$ e $\alpha = \log_{10}(c) \bmod 1$, a multiplicação $X \mapsto cX$ age sobre $Y$ como uma translação:
 
 $$
-Y \;\mapsto\; (Y + \alpha) \bmod 1.
+Y \mapsto (Y + \alpha) \bmod 1.
 $$
 
 O conjunto de $\alpha$ atingíveis enquanto $c$ percorre $(0, \infty)$ é o intervalo $[0, 1)$ inteiro. Logo invariância de escala é *equivalente* a invariância por translação de $Y$ no círculo $\mathbb{R}/\mathbb{Z}$. E existe exatamente uma distribuição de probabilidade invariante por translação no círculo: a uniforme.
