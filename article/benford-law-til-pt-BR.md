@@ -48,37 +48,45 @@ As três curvas capturam a faixa operacional. Benford aparece sempre que os dado
 
 ## 3. Primeira derivação: a mantissa é uniforme em $[0, 1)$
 
+A intuição original de Newcomb era de natureza geométrica: o primeiro dígito de um número depende apenas de onde ele cai dentro de uma "década" — o intervalo entre duas potências consecutivas de dez. Para tornar essa intuição precisa precisamos de uma coordenada que enxergue só essa posição relativa, ignorando a ordem de magnitude. O logaritmo faz exatamente isso, e dele sai a derivação inteira em poucos passos.
+
 Escreva qualquer real positivo $X$ em notação científica:
 
 $$
 X = r \cdot 10^k, \qquad r \in [1, 10), \quad k \in \mathbb{Z}.
 $$
 
-O fator $r$ é a **mantissa** e $k$ a ordem de magnitude. O primeiro dígito significativo de $X$ é simplesmente $\lfloor r \rfloor$. Tome logaritmos:
+O fator $r$ é a **mantissa** e $k$ a ordem de magnitude. O primeiro dígito significativo de $X$ é simplesmente $\lfloor r \rfloor$, de modo que toda a informação relevante para nossa pergunta vive em $r$ — multiplicar $X$ por uma potência de dez muda $k$ mas não toca em $r$, nem no primeiro dígito. Tomando logaritmos transformamos esse fato em álgebra:
 
 $$
 \log_{10}(X) = \log_{10}(r) + k, \qquad \log_{10}(r) \in [0, 1).
 $$
 
-Defina a **log-mantissa** $Y = \log_{10}(X) \bmod 1$. Por construção $Y \in [0, 1)$, e o primeiro dígito de $X$ é determinado por qual subintervalo de $[0, 1)$ contém $Y$:
+A ordem de magnitude $k$ vira a parte inteira do logaritmo, e a parte fracionária guarda toda a informação sobre o primeiro dígito. Essa parte fracionária merece um nome próprio. Defina a **log-mantissa** $Y = \log_{10}(X) \bmod 1$. Por construção $Y \in [0, 1)$, e o intervalo $[0, 1)$ se particiona naturalmente em nove subintervalos, um para cada dígito inicial:
 
 $$
 D(X) = d \iff \log_{10}(d) \le Y < \log_{10}(d + 1).
 $$
 
-Até aqui é apenas notação. A premissa probabilística é a próxima frase.
+O comprimento do $d$-ésimo subintervalo é exatamente $\log_{10}(d+1) - \log_{10}(d) = \log_{10}(1 + 1/d)$ — a fórmula de Benford já está lá, esperando uma medida de probabilidade que peso esses comprimentos. Até aqui, porém, tudo é tradução: nenhuma probabilidade foi introduzida. A passagem seguinte é o único lugar do argumento onde uma hipótese substantiva entra.
 
-> **Premissa (mantissa log-uniforme).** $Y \sim \mathrm{Uniforme}(0, 1)$.
-
-Se aceitamos isso, a distribuição de primeiro dígito sai numa única linha:
+**Premissa (mantissa log-uniforme).** Assuma que a log-mantissa $Y$ se distribui uniformemente em $[0, 1)$, isto é,
 
 $$
-P(D = d) \;=\; \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] \;=\; \log_{10}(d + 1) - \log_{10}(d) \;=\; \log_{10}\left(1 + \frac{1}{d}\right).
+Y \sim \mathrm{Uniforme}(0, 1).
 $$
 
-Essa é toda a derivação.
+Sob essa premissa, a probabilidade de $Y$ cair em um subintervalo é literalmente o comprimento desse subintervalo. A distribuição de primeiro dígito sai numa única linha:
 
-![Intuição da mantissa uniforme.](../figures/log_uniform_intuition.png)
+$$
+P(D = d) = \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] = \log_{10}(d + 1) - \log_{10}(d) = \log_{10}\left(1 + \frac{1}{d}\right).
+$$
+
+Essa é toda a derivação. O que parece um truque é estrutural: ao trocar a coordenada multiplicativa $X$ pela coordenada aditiva $Y$, transformamos a pergunta "qual é o primeiro dígito?" numa pergunta sobre comprimentos no círculo $[0, 1)$, e probabilidade uniforme nesse círculo se traduz diretamente na curva logarítmica.
+
+A figura abaixo torna o argumento tangível em dois movimentos. Na linha de cima, o histograma de $Y$ para amostras sintéticas $X = 10^U$ com $U \sim \mathrm{Uniforme}(0, k)$ se aproxima da densidade uniforme em $[0, 1)$ à medida que $k$ cresce — por construção, mas o achatamento é visível. Na linha de baixo, as frequências de primeiro dígito da amostra sintética com $k = 6$ (esquerda) e das populações de cidades do mundo (direita) assentam sobre a PMF de Benford: a premissa implica a curva, e dados reais multiescalares satisfazem a premissa.
+
+![Linha de cima: a log-mantissa $Y$ tende à uniforme em $[0,1)$ conforme $X$ cobre mais décadas. Linha de baixo: o primeiro dígito segue Benford, em dados sintéticos (esquerda) e reais (direita).](../figures/log_uniform_intuition.png)
 
 A questão substantiva é *por que* a premissa deveria valer. Três argumentos:
 
@@ -98,14 +106,18 @@ Logo a primeira derivação responde à pergunta "*dada* uma mantissa log-unifor
 
 Moeda é a motivação mais limpa. Tome um conjunto de receitas em BRL. Converta para USD multiplicando cada entrada por alguma taxa de câmbio $c$. A distribuição de primeiro dígito não deveria mudar só porque rotulamos a unidade de outra forma. Formalmente:
 
-> **Invariância de escala.** $\Pr[D(cX) = d] = \Pr[D(X) = d]$ para todo $c > 0$ e todo dígito $d$ de $1$ a $9$.
+**Invariância de escala.** Para todo $c > 0$ e todo dígito $d$ de $1$ a $9$,
+
+$$
+\Pr[D(cX) = d] = \Pr[D(X) = d].
+$$
 
 É uma restrição forte. Exclui, por exemplo, a distribuição uniforme nos dígitos — uniforme em uma moeda não será uniforme depois de multiplicar cada valor por $\pi$.
 
 Tome logaritmos novamente. Com $Y = \log_{10}(X) \bmod 1$ e $\alpha = \log_{10}(c) \bmod 1$, a multiplicação $X \mapsto cX$ age sobre $Y$ como uma translação:
 
 $$
-Y \;\mapsto\; (Y + \alpha) \bmod 1.
+Y \mapsto (Y + \alpha) \bmod 1.
 $$
 
 O conjunto de $\alpha$ atingíveis enquanto $c$ percorre $(0, \infty)$ é o intervalo $[0, 1)$ inteiro. Logo invariância de escala é *equivalente* a invariância por translação de $Y$ no círculo $\mathbb{R}/\mathbb{Z}$. E existe exatamente uma distribuição de probabilidade invariante por translação no círculo: a uniforme.

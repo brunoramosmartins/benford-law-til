@@ -42,37 +42,45 @@ The three curves capture the operating range. Benford appears wherever the data 
 
 ## 3. First derivation: the mantissa is uniform on $[0, 1)$
 
+Newcomb's original intuition was geometric: the first digit of a number depends only on where the number falls inside a "decade" — the interval between two consecutive powers of ten. To make that intuition precise we need a coordinate that sees only this relative position and ignores the order of magnitude. The logarithm does exactly that, and the entire derivation falls out of it in a few steps.
+
 Write any positive real $X$ in scientific notation:
 
 $$
 X = r \cdot 10^k, \qquad r \in [1, 10), \quad k \in \mathbb{Z}.
 $$
 
-The factor $r$ is the **mantissa** and $k$ is the order of magnitude. The first significant digit of $X$ is just $\lfloor r \rfloor$. Take logarithms:
+The factor $r$ is the **mantissa** and $k$ the order of magnitude. The first significant digit of $X$ is just $\lfloor r \rfloor$, so all the information relevant to our question lives in $r$ — multiplying $X$ by a power of ten changes $k$ but leaves $r$, and therefore the first digit, untouched. Taking logarithms turns that fact into algebra:
 
 $$
 \log_{10}(X) = \log_{10}(r) + k, \qquad \log_{10}(r) \in [0, 1).
 $$
 
-Define the **log-mantissa** $Y = \log_{10}(X) \bmod 1$. By construction $Y \in [0, 1)$, and the first digit of $X$ is determined by which subinterval of $[0, 1)$ contains $Y$:
+The order of magnitude $k$ becomes the integer part of the logarithm, and the fractional part carries all the information about the first digit. That fractional part deserves a name. Define the **log-mantissa** $Y = \log_{10}(X) \bmod 1$. By construction $Y \in [0, 1)$, and the interval $[0, 1)$ partitions naturally into nine subintervals, one per leading digit:
 
 $$
 D(X) = d \iff \log_{10}(d) \le Y < \log_{10}(d + 1).
 $$
 
-So far this is bookkeeping. The probabilistic premise is the next sentence.
+The length of the $d$-th subinterval is exactly $\log_{10}(d+1) - \log_{10}(d) = \log_{10}(1 + 1/d)$ — Benford's formula is already there, waiting for a probability measure that weighs these lengths. Up to here, however, everything is translation: no probability has been introduced. The next step is the one place in the argument where a substantive assumption enters.
 
-> **Premise (log-uniform mantissa).** $Y \sim \mathrm{Uniform}(0, 1)$.
-
-If we accept this, the first-digit distribution falls out of one line:
+**Premise (log-uniform mantissa).** Assume the log-mantissa $Y$ is uniformly distributed on $[0, 1)$, i.e.,
 
 $$
-P(D = d) \;=\; \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] \;=\; \log_{10}(d + 1) - \log_{10}(d) \;=\; \log_{10}\left(1 + \frac{1}{d}\right).
+Y \sim \mathrm{Uniform}(0, 1).
 $$
 
-That is the entire derivation.
+Under this premise, the probability that $Y$ falls inside a subinterval is literally the length of that subinterval. The first-digit distribution falls out of a single line:
 
-![Mantissa-uniformity intuition.](../figures/log_uniform_intuition.png)
+$$
+P(D = d) = \Pr[\log_{10}(d) \le Y < \log_{10}(d + 1)] = \log_{10}(d + 1) - \log_{10}(d) = \log_{10}\left(1 + \frac{1}{d}\right).
+$$
+
+That is the entire derivation. What looks like a sleight of hand is structural: by trading the multiplicative coordinate $X$ for the additive coordinate $Y$, we have turned the question "what is the first digit?" into a question about lengths on the circle $[0, 1)$, and uniform probability on that circle translates directly into the logarithmic curve.
+
+The figure below makes the argument tangible in two movements. In the top row, the histogram of $Y$ for synthetic samples $X = 10^U$ with $U \sim \mathrm{Uniform}(0, k)$ flattens visibly toward the uniform density on $[0, 1)$ as $k$ grows — by construction, but the convergence is striking. In the bottom row, the first-digit frequencies of the synthetic $k = 6$ sample (left) and of world city populations (right) sit on top of the Benford PMF: the premise implies the curve, and real multi-scale data satisfies the premise.
+
+![Top row: the log-mantissa $Y$ tends to uniform on $[0,1)$ as $X$ covers more decades. Bottom row: the first digit follows Benford, on synthetic data (left) and real data (right).](../figures/log_uniform_intuition.png)
 
 The substantive question is *why* the premise should hold. Three arguments:
 
@@ -92,14 +100,18 @@ So the first derivation answers the question "*given* a log-uniform mantissa, wh
 
 Currency is the cleanest motivation. Take a dataset of revenues in BRL. Convert to USD by multiplying every entry by some exchange rate $c$. The leading-digit distribution should not change just because we relabelled the unit. Formally:
 
-> **Scale invariance.** $\Pr[D(cX) = d] = \Pr[D(X) = d]$ for every $c > 0$ and every digit $d$ from $1$ to $9$.
+**Scale invariance.** For every $c > 0$ and every digit $d$ from $1$ to $9$,
+
+$$
+\Pr[D(cX) = d] = \Pr[D(X) = d].
+$$
 
 This is a strong constraint. It rules out, for example, the uniform distribution on digits — uniform under one currency will not be uniform after multiplying every value by $\pi$.
 
 Take logs again. With $Y = \log_{10}(X) \bmod 1$ and $\alpha = \log_{10}(c) \bmod 1$, the multiplication $X \mapsto cX$ acts on $Y$ as a translation:
 
 $$
-Y \;\mapsto\; (Y + \alpha) \bmod 1.
+Y \mapsto (Y + \alpha) \bmod 1.
 $$
 
 The set of attainable $\alpha$ as $c$ ranges over $(0, \infty)$ is the entire interval $[0, 1)$. So scale invariance is *equivalent* to translation invariance of $Y$ on the circle $\mathbb{R}/\mathbb{Z}$. And there is exactly one translation-invariant probability distribution on the circle: the uniform distribution.
