@@ -152,9 +152,11 @@ A próxima pergunta é operacional: dado um conjunto de dados real, como *testam
 
 ## 5. Testando conformidade: $\chi^2$, KS, MAD, $Z$
 
-Quatro testes, quatro sensibilidades. Tome uma distribuição empírica de primeiro dígito $\hat P(1), \ldots, \hat P(9)$ em uma amostra de tamanho $n$ e pergunte: o quão próxima está da PMF de Benford?
+A lei é estrutural, mas dados reais satisfazem a premissa apenas aproximadamente — uma amostra finita nunca pousa exatamente sobre a curva de Benford, e mesmo conjuntos com várias décadas de cobertura carregam uma ondulação residual. Resta portanto uma pergunta empírica: quão próximo é próximo o suficiente para chamarmos os dados de conformes, e que tipo de desvio nos preocupa? Audiências diferentes querem distâncias diferentes — quem testa hipótese quer um p-valor, quem audita quer uma escala de veredito que não colapse em tamanhos industriais de amostra, quem investiga quer saber *qual* dígito está fora. Nenhuma estatística sozinha responde aos três, então a prática padrão é rodar um pequeno bundle. Quatro testes, quatro sensibilidades. Tome uma distribuição empírica de primeiro dígito $\hat P(1), \ldots, \hat P(9)$ em uma amostra de tamanho $n$ e pergunte: o quão próxima está da PMF de Benford (a função massa de probabilidade $P(d) = \log_{10}(1 + 1/d)$, $d = 1, \ldots, 9$)?
 
-![O bundle dos quatro testes em três conjuntos de referência.](../figures/conformity_test_demo.png)
+![Três conjuntos de referência — populações de cidades, Fibonacci, alturas adultas — com os vereditos dos quatro testes reportados no título de cada painel.](../figures/conformity_test_demo.png)
+
+A figura é o catálogo: três conjuntos de referência (um real e conforme, um sintético e conforme, um sintético que falha), cada painel carregando *os quatro* vereditos no título. São três painéis, não quatro — um por dataset; os quatro testes aparecem por painel. O layout espelha como o bundle é usado na prática: um conjunto de dados, quatro números, um veredito.
 
 **$\chi^2$ de Pearson.** Trate o vetor de contagens $(O_1, \ldots, O_9)$ como multinomial com parâmetros $(n; P(1), \ldots, P(9))$ sob a hipótese nula. A estatística
 
@@ -162,15 +164,15 @@ $$
 \chi^2 = \sum_{d=1}^{9} \frac{(O_d - n P(d))^2}{n P(d)}
 $$
 
-é assintoticamente $\chi^2_8$ — a restrição $\sum_d O_d = n$ remove um grau de liberdade das nove células. Rejeita-se em $\alpha = 0{,}05$ se $\chi^2 > 15{,}51$. O qui-quadrado é o teste de hipótese honesto para $n$ moderado, mas tem uma falha conhecida: para $n$ muito grande (da ordem de $10^6$), até desvios microscópicos (em torno de $0{,}001$ por célula) tornam-se "estatisticamente significativos". O teste responde "o desvio é literalmente zero?", o que raramente é a pergunta de interesse na prática.
+é assintoticamente $\chi^2_8$ — a restrição $\sum_d O_d = n$ remove um grau de liberdade das nove células. Rejeita-se em $\alpha = 0{,}05$ se $\chi^2 > 15{,}51$. O qui-quadrado é o teste de hipótese honesto para $n$ moderado, mas tem uma falha conhecida: para $n$ muito grande (da ordem de $10^6$), até desvios microscópicos (em torno de $0{,}001$ por célula) tornam-se "estatisticamente significativos". O teste responde "o desvio é literalmente zero?", o que raramente é a pergunta de interesse na prática. Essa falha motiva as duas estatísticas seguintes.
 
-**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, onde $F$ é a CDF cumulativa de Benford. Sensível a *deriva sistemática* ao longo das células de modo que o $\chi^2$ dilui na média. A distribuição assintótica de Kolmogorov fornece um p-valor via $\sqrt{n}\, D_n$, mas é conservadora numa distribuição discreta — útil como diagnóstico, não como teste afiado.
+**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, onde $F$ é a CDF cumulativa de Benford. Sensível a *deriva sistemática* ao longo das células de modo que o $\chi^2$ dilui na média — se o desvio é concentrado num degrau ou numa rampa em vez de espalhado, o KS percebe e o $\chi^2$ pode não perceber. A distribuição assintótica de Kolmogorov fornece um p-valor via $\sqrt{n}\, D_n$, mas é conservadora numa distribuição discreta — útil como diagnóstico, não como teste afiado. O KS ainda herda o problema de inflação para $n$ grande, e é isso que o MAD endereça.
 
-**MAD com limiares de Nigrini.** A estatística mais simples, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, é **invariante ao tamanho da amostra**: um vetor de proporções produz o mesmo valor para $n = 1{.}000$ ou $n = 10^7$. *Benford's Law* (Wiley, 2012) de Mark Nigrini calibra uma escala de veredito: $< 0{,}006$ "conformidade próxima"; $< 0{,}012$ "aceitável"; $< 0{,}015$ "marginalmente aceitável"; $\ge 0{,}015$ "não-conformidade". MAD não tem distribuição amostral formal nem p-valor — mas é o único dos quatro que escala razoavelmente para dados de auditoria forense onde $n \gg 10^5$.
+**MAD com limiares de Nigrini.** A estatística mais simples, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, é **invariante ao tamanho da amostra**: um vetor de proporções produz o mesmo valor para $n = 1{.}000$ ou $n = 10^7$. *Benford's Law* (Wiley, 2012) de Mark Nigrini calibra uma escala de veredito: $< 0{,}006$ "conformidade próxima"; $< 0{,}012$ "aceitável"; $< 0{,}015$ "marginalmente aceitável"; $\ge 0{,}015$ "não-conformidade". MAD não tem distribuição amostral formal nem p-valor — mas é o único dos quatro que escala razoavelmente para dados de auditoria forense onde $n \gg 10^5$. O preço é que o MAD agrega sobre as nove células, então não diz *onde* mora o desvio — esse é o trabalho do último teste.
 
 **$Z$ por dígito.** Para cada $d$, trate $O_d \sim \mathrm{Binomial}(n, P(d))$ e calcule o $z_d$ bilateral padronizado (com correção de continuidade de Yates). Rejeita-se em $\alpha = 0{,}05$ se $|z_d| > 1{,}96$. O $Z$ por dígito não controla a taxa de erro familiar entre as nove células — é um *diagnóstico*: se só a célula 1 é sinalizada, faltam 1s iniciais nos dados; se as células 8 e 9 são sinalizadas, os dados mostram viés de números redondos.
 
-A regra para escolher entre os quatro:
+Cada teste responde a uma pergunta diferente, então a regra para escolher é casar a pergunta com o teste:
 
 | Pergunta | Teste |
 |---|---|
@@ -179,7 +181,7 @@ A regra para escolher entre os quatro:
 | Auditoria em escala forense, $n \gg 10^5$ | MAD |
 | *Qual* dígito está fora? | $Z$ por dígito |
 
-Na prática, rode os quatro. A implementação está em `src.conformity.conformity_report`.
+Na prática, rode os quatro — eles custam quase nada após calcular $\hat P$ uma vez, e cada um pega um tipo de desvio que os outros perdem. A implementação está em `src.conformity.conformity_report`.
 
 ---
 

@@ -146,9 +146,11 @@ The next question is operational: given a real dataset, how do we *test* whether
 
 ## 5. Testing conformity: $\chi^2$, KS, MAD, $Z$
 
-Four tests, four sensitivities. Take an empirical first-digit distribution $\hat P(1), \ldots, \hat P(9)$ on a sample of size $n$, and ask: how close is it to the Benford PMF?
+The law is structural, but real data only approximately satisfies the premise — a finite sample never sits exactly on the Benford curve, and even multi-decade datasets carry a residual ripple. So an empirical question always remains: how close is close enough to call the data conforming, and what kind of deviation are we worried about? Different audiences want different gaps — a hypothesis tester wants a p-value, an auditor wants a verdict scale that does not collapse at industrial sample sizes, a detective wants to know *which* digit is off. No single statistic answers all three, so the standard practice is to run a small bundle. Four tests, four sensitivities. Take an empirical first-digit distribution $\hat P(1), \ldots, \hat P(9)$ on a sample of size $n$ and ask: how close is it to the Benford PMF (the probability mass function $P(d) = \log_{10}(1 + 1/d)$, $d = 1, \ldots, 9$)?
 
-![The four-test bundle on three reference datasets.](../figures/conformity_test_demo.png)
+![Three reference datasets — world cities, Fibonacci, adult heights — with all four test verdicts reported in each panel's title.](../figures/conformity_test_demo.png)
+
+The figure is the catalog: three reference datasets (one real-and-conforming, one synthetic-and-conforming, one synthetic-and-failing), each panel carrying *all four* test outcomes in its title. There are three panels, not four — one per dataset; the four tests are reported per panel. The layout mirrors how the bundle is used in practice: one dataset, four numbers, one verdict.
 
 **Pearson $\chi^2$.** Treat the count vector $(O_1, \ldots, O_9)$ as multinomial with parameters $(n; P(1), \ldots, P(9))$ under the null. The test statistic
 
@@ -156,15 +158,15 @@ $$
 \chi^2 = \sum_{d=1}^{9} \frac{(O_d - n P(d))^2}{n P(d)}
 $$
 
-is asymptotically $\chi^2_8$ — the constraint $\sum_d O_d = n$ removes one degree of freedom from the nine cells. Reject at $\alpha = 0.05$ if $\chi^2 > 15.51$. Chi-squared is the honest hypothesis test for moderate $n$, but it has a known defect: at very large $n$ (on the order of $10^6$), even microscopic deviations (about $0.001$ per cell) become "statistically significant". The test answers the question "is the deviation literally zero?", which is rarely the question of interest in practice.
+is asymptotically $\chi^2_8$ — the constraint $\sum_d O_d = n$ removes one degree of freedom from the nine cells. Reject at $\alpha = 0.05$ if $\chi^2 > 15.51$. Chi-squared is the honest hypothesis test for moderate $n$, but it has a known defect: at very large $n$ (on the order of $10^6$), even microscopic deviations (about $0.001$ per cell) become "statistically significant". The test answers "is the deviation literally zero?", which is rarely the question of interest in practice. That defect is what motivates the next two statistics.
 
-**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, where $F$ is the cumulative Benford CDF. Sensitive to *systematic* drift across the cells in a way $\chi^2$ averages away. The asymptotic Kolmogorov distribution gives a p-value via $\sqrt{n}\, D_n$, but it is conservative on a discrete distribution — useful as a diagnostic, not as a sharp test.
+**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, where $F$ is the cumulative Benford CDF. Sensitive to *systematic* drift across the cells in a way $\chi^2$ averages away — if the deviation is concentrated as a step or a ramp rather than scattered, KS notices and $\chi^2$ may not. The asymptotic Kolmogorov distribution gives a p-value via $\sqrt{n}\, D_n$, but it is conservative on a discrete distribution — useful as a diagnostic, not as a sharp test. KS still inherits the large-$n$ inflation problem, which is what MAD addresses.
 
-**MAD with Nigrini's thresholds.** The simplest statistic, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, is **sample-size invariant**: a given proportion vector yields the same value at $n = 1{,}000$ or $n = 10^7$. Mark Nigrini's *Benford's Law* (Wiley, 2012) calibrates a verdict scale: $< 0.006$ "close conformity"; $< 0.012$ "acceptable"; $< 0.015$ "marginally acceptable"; $\ge 0.015$ "non-conformity". MAD has no formal sampling distribution and no p-value — but it is the only one of the four that scales sensibly to forensic-audit datasets where $n \gg 10^5$.
+**MAD with Nigrini's thresholds.** The simplest statistic, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, is **sample-size invariant**: a given proportion vector yields the same value at $n = 1{,}000$ or $n = 10^7$. Mark Nigrini's *Benford's Law* (Wiley, 2012) calibrates a verdict scale: $< 0.006$ "close conformity"; $< 0.012$ "acceptable"; $< 0.015$ "marginally acceptable"; $\ge 0.015$ "non-conformity". MAD has no formal sampling distribution and no p-value — but it is the only one of the four that scales sensibly to forensic-audit datasets where $n \gg 10^5$. The price is that MAD aggregates across the nine cells, so it cannot tell you *where* the deviation lives — that is the job of the last test.
 
 **Per-digit $Z$.** For each $d$, treat $O_d \sim \mathrm{Binomial}(n, P(d))$ and compute the standardized two-sided $z_d$ (with Yates' continuity correction). Reject at $\alpha = 0.05$ if $|z_d| > 1.96$. Per-digit $Z$ does not control the family-wise error rate across the nine cells — it is a *diagnostic*: if cell 1 alone is flagged, the data are short of leading 1s; if cells 8 and 9 are flagged, the data show round-number bias.
 
-The rule for choosing among the four:
+Each test answers a different question, so the rule for choosing is to match the question to the test:
 
 | Question | Test |
 |---|---|
@@ -173,7 +175,7 @@ The rule for choosing among the four:
 | Forensic-scale audit, $n \gg 10^5$ | MAD |
 | *Which* digit is off? | per-digit $Z$ |
 
-In practice, run all four. The implementation is `src.conformity.conformity_report`.
+In practice, run all four — they cost almost nothing on top of computing $\hat P$ once, and each catches a kind of deviation the others miss. The implementation is `src.conformity.conformity_report`.
 
 ---
 
