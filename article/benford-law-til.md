@@ -98,7 +98,7 @@ So the first derivation answers the question "*given* a log-uniform mantissa, wh
 
 ## 4. Second derivation: scale invariance forces $1/x$
 
-Currency is the cleanest motivation. Take a dataset of revenues in BRL. Convert to USD by multiplying every entry by some exchange rate $c$. The leading-digit distribution should not change just because we relabelled the unit. Formally:
+Currency is the cleanest motivation. Take a dataset of revenues in BRL. Convert to USD by multiplying every entry by some exchange rate $c$. The leading-digit distribution should not change just because we relabelled the unit — the dollar and the real are arbitrary tags, and the underlying economic activity does not know which one we picked. That informal expectation is a *symmetry* claim about the data, not a statistical one. Formally:
 
 **Scale invariance.** For every $c > 0$ and every digit $d$ from $1$ to $9$,
 
@@ -106,19 +106,19 @@ $$
 \Pr[D(cX) = d] = \Pr[D(X) = d].
 $$
 
-This is a strong constraint. It rules out, for example, the uniform distribution on digits — uniform under one currency will not be uniform after multiplying every value by $\pi$.
+This is a strong constraint. It rules out, for example, the uniform distribution on digits — uniform under one currency will not be uniform after multiplying every value by $\pi$. Even before any derivation, the requirement already narrows the candidate distributions sharply.
 
-Take logs again. With $Y = \log_{10}(X) \bmod 1$ and $\alpha = \log_{10}(c) \bmod 1$, the multiplication $X \mapsto cX$ acts on $Y$ as a translation:
+The natural move is again to pass to logs, because logs turn multiplication into addition. With $Y = \log_{10}(X) \bmod 1$ and $\alpha = \log_{10}(c) \bmod 1$, the operation $X \mapsto cX$ becomes $\log_{10}(X) \mapsto \log_{10}(X) + \log_{10}(c)$, which on the log-mantissa is a translation:
 
 $$
 Y \mapsto (Y + \alpha) \bmod 1.
 $$
 
-The set of attainable $\alpha$ as $c$ ranges over $(0, \infty)$ is the entire interval $[0, 1)$. So scale invariance is *equivalent* to translation invariance of $Y$ on the circle $\mathbb{R}/\mathbb{Z}$. And there is exactly one translation-invariant probability distribution on the circle: the uniform distribution.
+As $c$ ranges over $(0, \infty)$, $\log_{10}(c)$ ranges over all of $\mathbb{R}$, so $\alpha = \log_{10}(c) \bmod 1$ takes every value in $[0, 1)$. Scale invariance of $X$ is therefore *equivalent* to translation invariance of $Y$ on the circle $\mathbb{R}/\mathbb{Z}$. And there is exactly one translation-invariant probability distribution on the circle: the uniform distribution. The intuition is symmetry — any other distribution would have a "preferred point" that translation would move, contradicting invariance. (Formally, this is the uniqueness of Haar measure on a compact group.)
 
 Scale invariance therefore forces $Y \sim \mathrm{Uniform}(0, 1)$, which by §3 forces the Benford PMF. The argument is clean enough to deserve a name; it is **Pinkham's theorem**.
 
-There is a complementary route through the *density* rather than the log-mantissa. On a finite window $[a, b] \subset (0, \infty)$ the only probability density invariant under multiplication is
+A complementary route works directly with the *density* on $X$ rather than passing through the log-mantissa, and is worth seeing because it makes the $1/x$ shape explicit. Under $X \mapsto cX$ a probability density transforms as $f(x) \mapsto \frac{1}{c} f(x/c)$. Demanding that this equal $f(x)$ for every $c > 0$ forces $f(x) \propto 1/x$. So on a finite window $[a, b] \subset (0, \infty)$ the only probability density invariant under multiplication is
 
 $$
 f(x) = \frac{1}{x \log(b/a)}.
@@ -130,7 +130,7 @@ $$
 P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
-The factor $10^k$ cancels. That cancellation *is* the scale invariance, made arithmetic.
+The factor $10^k$ cancels. That cancellation *is* the scale invariance, made arithmetic: the leading-digit probability does not depend on which decade we restrict to.
 
 ![Multiplying world city populations by various constants. The first-digit distribution does not move.](../figures/scale_invariance.png)
 

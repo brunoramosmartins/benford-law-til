@@ -84,7 +84,7 @@ $$
 
 Essa é toda a derivação. O que parece um truque é estrutural: ao trocar a coordenada multiplicativa $X$ pela coordenada aditiva $Y$, transformamos a pergunta "qual é o primeiro dígito?" numa pergunta sobre comprimentos no círculo $[0, 1)$, e probabilidade uniforme nesse círculo se traduz diretamente na curva logarítmica.
 
-A figura abaixo torna o argumento tangível em dois movimentos. Na linha de cima, o histograma da log-mantissa $Y$ para amostras sintéticas $X = 10^U$ com $U \sim \mathrm{Uniforme}(0, k)$ é mostrado para $k = 0{,}5,\, 1{,}5,\, 3{,}5,\, 8{,}5$ — valores deliberadamente não-inteiros, para que a convergência seja visível. Em $k = 0{,}5$, $Y$ nem cobre $[0, 1)$ (toda a massa está em $[0; 0{,}5)$); em $k = 1{,}5$, há um degrau claro em $Y = 0{,}5$ (densidade $\approx 1{,}33$ na primeira metade contra $\approx 0{,}67$ na segunda); em $k = 3{,}5$ o degrau é mais brando; em $k = 8{,}5$ o histograma é visualmente plano. A diferença em relação à uniforme decai como $1/k$. Na linha de baixo, as frequências de primeiro dígito da amostra sintética com $k = 8{,}5$ (esquerda) e das populações de cidades do mundo (direita) assentam sobre a PMF de Benford: a premissa implica a curva, e dados reais multiescalares satisfazem a premissa.
+A figura abaixo torna o argumento tangível em dois movimentos. Na linha de cima, o histograma da log-mantissa $Y$ para amostras sintéticas $X = 10^U$ com $U \sim \mathrm{Uniforme}(0, k)$ é mostrado para $k = 0{,}5,\, 1{,}5,\, 3{,}5,\, 8{,}5$ — valores deliberadamente não-inteiros, para que a convergência seja visível. Em $k = 0{,}5$, $Y$ nem cobre todo o intervalo unitário — a massa fica concentrada na primeira metade ($Y < 0{,}5$) com densidade $2$, e a segunda metade está vazia; em $k = 1{,}5$, $Y$ já cobre o intervalo todo, mas com um degrau claro em $Y = 0{,}5$ (densidade $\approx 1{,}33$ na primeira metade contra $\approx 0{,}67$ na segunda); em $k = 3{,}5$ o degrau é mais brando; em $k = 8{,}5$ o histograma é visualmente plano. A diferença em relação à uniforme decai como $1/k$. Na linha de baixo, as frequências de primeiro dígito da amostra sintética com $k = 8{,}5$ (esquerda) e das populações de cidades do mundo (direita) assentam sobre a PMF de Benford: a premissa implica a curva, e dados reais multiescalares satisfazem a premissa.
 
 ![Linha de cima: a log-mantissa Y converge à densidade uniforme conforme X cobre mais décadas (k = 0,5; 1,5; 3,5; 8,5). Linha de baixo: o primeiro dígito segue Benford, em dados sintéticos à esquerda e reais à direita.](../figures/log_uniform_intuition.png)
 
@@ -104,7 +104,7 @@ Logo a primeira derivação responde à pergunta "*dada* uma mantissa log-unifor
 
 ## 4. Segunda derivação: invariância de escala força $1/x$
 
-Moeda é a motivação mais limpa. Tome um conjunto de receitas em BRL. Converta para USD multiplicando cada entrada por alguma taxa de câmbio $c$. A distribuição de primeiro dígito não deveria mudar só porque rotulamos a unidade de outra forma. Formalmente:
+Moeda é a motivação mais limpa. Tome um conjunto de receitas em BRL. Converta para USD multiplicando cada entrada por alguma taxa de câmbio $c$. A distribuição de primeiro dígito não deveria mudar só porque rotulamos a unidade de outra forma — o dólar e o real são apenas etiquetas, e a atividade econômica subjacente não sabe qual escolhemos. Essa expectativa informal é uma afirmação de *simetria* sobre os dados, não uma afirmação estatística. Formalmente:
 
 **Invariância de escala.** Para todo $c > 0$ e todo dígito $d$ de $1$ a $9$,
 
@@ -112,19 +112,19 @@ $$
 \Pr[D(cX) = d] = \Pr[D(X) = d].
 $$
 
-É uma restrição forte. Exclui, por exemplo, a distribuição uniforme nos dígitos — uniforme em uma moeda não será uniforme depois de multiplicar cada valor por $\pi$.
+É uma restrição forte. Exclui, por exemplo, a distribuição uniforme nos dígitos — uniforme em uma moeda não será uniforme depois de multiplicar cada valor por $\pi$. Antes mesmo de qualquer derivação, o requisito já restringe sensivelmente as distribuições candidatas.
 
-Tome logaritmos novamente. Com $Y = \log_{10}(X) \bmod 1$ e $\alpha = \log_{10}(c) \bmod 1$, a multiplicação $X \mapsto cX$ age sobre $Y$ como uma translação:
+O movimento natural é passar de novo aos logaritmos, porque o logaritmo transforma multiplicação em soma. Com $Y = \log_{10}(X) \bmod 1$ e $\alpha = \log_{10}(c) \bmod 1$, a operação $X \mapsto cX$ vira $\log_{10}(X) \mapsto \log_{10}(X) + \log_{10}(c)$, o que na log-mantissa é uma translação:
 
 $$
 Y \mapsto (Y + \alpha) \bmod 1.
 $$
 
-O conjunto de $\alpha$ atingíveis enquanto $c$ percorre $(0, \infty)$ é o intervalo $[0, 1)$ inteiro. Logo invariância de escala é *equivalente* a invariância por translação de $Y$ no círculo $\mathbb{R}/\mathbb{Z}$. E existe exatamente uma distribuição de probabilidade invariante por translação no círculo: a uniforme.
+Conforme $c$ percorre $(0, \infty)$, $\log_{10}(c)$ percorre todo o $\mathbb{R}$, então $\alpha = \log_{10}(c) \bmod 1$ assume todo valor em $[0, 1)$. Invariância de escala em $X$ é portanto *equivalente* a invariância por translação de $Y$ no círculo $\mathbb{R}/\mathbb{Z}$. E existe exatamente uma distribuição de probabilidade invariante por translação no círculo: a uniforme. A intuição é de simetria — qualquer outra distribuição teria um "ponto preferido" que a translação deslocaria, contradizendo a invariância. (Formalmente, é a unicidade da medida de Haar em um grupo compacto.)
 
 Invariância de escala portanto força $Y \sim \mathrm{Uniforme}(0, 1)$, o que pela §3 força a PMF de Benford. O argumento é limpo o suficiente para merecer um nome; é o **teorema de Pinkham**.
 
-Há uma rota complementar pela *densidade* em vez de pela log-mantissa. Em uma janela finita $[a, b] \subset (0, \infty)$ a única densidade de probabilidade invariante por multiplicação é
+Uma rota complementar trabalha diretamente com a *densidade* sobre $X$, sem passar pela log-mantissa, e vale a pena ver porque torna explícita a forma $1/x$. Sob $X \mapsto cX$ uma densidade de probabilidade se transforma como $f(x) \mapsto \frac{1}{c} f(x/c)$. Exigir que isso seja igual a $f(x)$ para todo $c > 0$ força $f(x) \propto 1/x$. Assim, em uma janela finita $[a, b] \subset (0, \infty)$ a única densidade de probabilidade invariante por multiplicação é
 
 $$
 f(x) = \frac{1}{x \log(b/a)}.
@@ -136,7 +136,7 @@ $$
 P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
-O fator $10^k$ cancela. Esse cancelamento *é* a invariância de escala, em forma aritmética.
+O fator $10^k$ cancela. Esse cancelamento *é* a invariância de escala, em forma aritmética: a probabilidade do primeiro dígito não depende de qual década restringimos.
 
 ![Multiplicando populações de cidades por várias constantes. A distribuição de primeiro dígito não se mexe.](../figures/scale_invariance.png)
 
