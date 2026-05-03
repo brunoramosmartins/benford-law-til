@@ -4,6 +4,12 @@
 
 ---
 
+## Why I'm writing about this
+
+I recently reread *The Drunkard's Walk* and stumbled again on the paragraph where Mlodinow mentions, almost in passing, Benford's Law — the uncomfortable idea that the first digit of "any" natural dataset is not uniformly distributed but follows a logarithmic curve. On first reading I had accepted the fact as a curiosity; this time I wanted to understand why. What began as a margin note turned into this TIL: an honest attempt to reconstruct the law from two independent arguments, watch the data fit the curve, and close the loop with a concrete application — fraud detection. What follows is the clean notebook of that rereading.
+
+---
+
 ## 1. The worn pages of a logarithm table
 
 In 1881 the astronomer Simon Newcomb noticed something odd while flipping through his copy of a book of logarithms. The early pages — those for numbers starting with 1 — were filthy and dog-eared; the later pages, for numbers starting with 9, were crisp and clean. A logarithm table is the most stubbornly mechanical of references. There is no plot, no narrative, no way for some chapters to be more interesting than others. So why were the early pages worn out?
@@ -181,23 +187,25 @@ In practice, run all four — they cost almost nothing on top of computing $\hat
 
 ## 6. Fraud demo: when fabricated numbers betray themselves
 
-Phase 5 closes the loop. Take a clean Benford-conforming dataset, replace a fraction of its entries with fabricated values, and watch the four-test bundle cross from *accept* to *reject*.
+§5 set up the conformity bundle on clean data; §6 puts it to work in an adversarial setting. Take a clean Benford-conforming dataset, replace a fraction of its entries with fabricated values, and watch the four-test bundle cross from *accept* to *reject*. The setup is deliberately stylised — there is no real fraudster on the other side, and we control everything — but it is the cleanest way to see what kind of contamination the bundle catches and what it lets through. The point is not to prove that the bundle works; it is to read off where its threshold sits.
 
 ![Clean vs 30%-contaminated city populations.](../figures/fraud_before_after.png)
 
-The fabricated batch is calibrated to look superficially plausible: drawn over the same magnitude window as the original data, so the fraud signal lives in the *digit distribution* and not in the order of magnitude. Three fabrication strategies are implemented in `src.fraud`:
+The before-and-after figure shows the same GeoNames `cities5000` dataset ($n \approx 68{,}000$) before contamination, on the left, and after replacing 30 % of its entries with fabricated values, on the right. The Benford curve does not move; what moves are the empirical bars, and the bundle reads off the gap.
 
-1. **Uniform-digit.** Each leading digit appears in about $11.1\,\%$ of the entries. The textbook violation.
-2. **Round numbers.** Values cluster at $100, 200, 250, 500, 1{,}000, 2{,}000, 5{,}000, 10{,}000$, mimicking the fraudster who rounds mentally.
-3. **Psychological.** Humans asked to write "random" numbers over-pick the mid digits 3–6 and under-pick 1 and 9.
+The fabricated batch is calibrated to look superficially plausible: drawn over the same magnitude window as the original data, so the fraud signal lives in the *digit distribution* and not in the order of magnitude. This is the realistic threat model — a fraudster who copies the right scale and gets the digits wrong, not one who invents nine-digit revenues for a small business. Three fabrication strategies are implemented in `src.fraud`:
 
-Sweeping the contamination fraction from 0 % to 100 % and running the four-test bundle 30 times at each level gives the **detection-power curve**:
+1. **Uniform-digit.** Each leading digit appears in about $11.1\,\%$ of the entries. The textbook violation — the easiest to catch because it scrambles the curve everywhere at once.
+2. **Round numbers.** Values cluster at $100, 200, 250, 500, 1{,}000, 2{,}000, 5{,}000, 10{,}000$, mimicking the fraudster who rounds mentally. Subtle, because round numbers preserve a leading-digit bias of their own.
+3. **Psychological.** Humans asked to write "random" numbers over-pick the mid digits 3–6 and under-pick 1 and 9 — a reproducible cognitive bias documented in the experimental literature.
+
+Each strategy is a different attack on the curve, so each gives the bundle a different stress test. To turn that into a single picture of detection power, sweep the contamination fraction from 0 % to 100 % and run the four-test bundle 30 times at each level. The result is the **detection-power curve**:
 
 ![Detection power across three fabrication strategies on the GeoNames cities5000 dataset.](../figures/fraud_detection_power.png)
 
 The MAD curve climbs through Nigrini's verdict tiers (acceptable → marginally acceptable → non-conformity) within the first 5–10 % of contamination. The Pearson $\chi^2$ statistic — log-scale — climbs steeply through its $\alpha = 0.05$ critical value of 15.51 at roughly the same point. The empirical rejection rate at $\alpha = 0.05$ saturates near 1 for all three fabrication kinds by 10–15 % contamination.
 
-The reading: at this sample size, a Benford-style audit reliably detects fraud whenever 10 % or more of the entries are fabricated by any of the three strategies. Below 5 %, detection power varies — round-number fabrication is the hardest to catch because it preserves the leading-digit bias of Benford while displacing it onto digits $1$, $2$ and $5$.
+The reading: at this sample size, a Benford-style audit reliably detects fraud whenever 10 % or more of the entries are fabricated by any of the three strategies. Below 5 %, detection power varies — round-number fabrication is the hardest to catch because it preserves the leading-digit bias of Benford while displacing it onto digits $1$, $2$ and $5$. The bundle is not a magic detector; it is a coarse filter that flags gross contamination cheaply and leaves the auditor to decide where to look closer.
 
 This experiment is not just a toy. Documented historical cases include:
 
@@ -211,19 +219,21 @@ The script `scripts/exp_fraud_demo.py` reproduces the *mechanism* by which these
 
 ## 7. When Benford fails, and why that is also useful
 
-Benford's Law is not a universal law of numbers. It applies to datasets whose values span several orders of magnitude *multiplicatively* and are generated by a process that mixes scales. It fails — sharply — for at least three classes of data:
+§6 showed the bundle catching deliberate contamination. The flip side is worth being explicit about: Benford is not a universal law of numbers, and there are honest datasets where it has no business holding. Knowing the boundary is part of using the tool — applying a Benford test to data outside its operating range produces false positives, not insight. The law applies to datasets whose values span several orders of magnitude *multiplicatively* and are generated by a process that mixes scales. It fails — sharply — for at least three classes of data:
 
-1. **Bounded data on an additive scale.** Adult heights, body temperatures, IQ scores, exam grades. The values sit within one order of magnitude, so the log-mantissa $Y$ is sharply concentrated and the first-digit distribution collapses to whatever digit dominates the support. §2's heights example is the textbook case.
+1. **Bounded data on an additive scale.** Adult heights, body temperatures, IQ scores, exam grades. The values sit within one order of magnitude, so the log-mantissa $Y$ is sharply concentrated and the first-digit distribution collapses to whatever digit dominates the support. §2's heights example is the textbook case — a single tall bar at $d = 1$ and zeros elsewhere.
 
-2. **Assigned identifiers.** Phone numbers, ZIP codes, social security numbers, ID document numbers. These are sampled from a fixed combinatorial design, not generated by a multiplicative process; the leading digit is a structural artefact of the issuing authority.
+2. **Assigned identifiers.** Phone numbers, ZIP codes, social security numbers, ID document numbers. These are sampled from a fixed combinatorial design, not generated by a multiplicative process; the leading digit is a structural artefact of the issuing authority, not of any underlying random process. There is nothing for a Benford test to find here, and a "violation" only tells you that the data have a deliberate structure.
 
-3. **Truncated data.** Any dataset with a hard floor or ceiling distorts the leading-digit distribution near the cutoff. The GeoNames `cities5000` data show a small spike at $d = 5$ for exactly this reason — every city *just* over the 5,000-population threshold has a leading 5.
+3. **Truncated data.** Any dataset with a hard floor or ceiling distorts the leading-digit distribution near the cutoff. The GeoNames `cities5000` data show a small spike at $d = 5$ for exactly this reason — every city *just* over the 5,000-population threshold has a leading 5. The test still works, but the analyst has to know the truncation is there before reading the spike as fraud.
 
-The failures are operationally useful. A dataset that *should* conform to Benford and does not is a flag: either the data-generating process is not what you thought, or the data have been tampered with. Forensic accounting uses this asymmetrically — a Benford-conforming dataset is uninformative; a Benford-failing dataset is the question worth asking.
+The failures are operationally useful, and the asymmetry is the point. A dataset that *should* conform to Benford and does not is a flag: either the data-generating process is not what you thought, or the data have been tampered with. Forensic accounting uses this asymmetrically — a Benford-conforming dataset is uninformative on its own; a Benford-failing dataset is the question worth asking. The law is most powerful not when it confirms but when it refuses to.
 
 ---
 
 ## 8. Takeaways
+
+Five points to leave on the table:
 
 1. **The Benford PMF $P(d) = \log_{10}(1 + 1/d)$ is structural, not coincidental.** Two unrelated derivations — log-uniform mantissa and scale invariance — converge on the same curve. The convergence is the evidence.
 

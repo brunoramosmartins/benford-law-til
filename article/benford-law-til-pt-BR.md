@@ -187,23 +187,25 @@ Na prática, rode os quatro — eles custam quase nada após calcular $\hat P$ u
 
 ## 6. Demo de fraude: quando números fabricados se entregam
 
-A Fase 5 fecha o ciclo. Pegue um conjunto limpo, conforme a Benford, substitua uma fração de suas entradas por valores fabricados e veja o bundle dos quatro testes cruzar de *aceitar* para *rejeitar*.
+A §5 montou o bundle de conformidade em dados limpos; a §6 o coloca para trabalhar em cenário adversarial. Pegue um conjunto limpo, conforme a Benford, substitua uma fração de suas entradas por valores fabricados e veja o bundle dos quatro testes cruzar de *aceitar* para *rejeitar*. O setup é deliberadamente estilizado — não há fraudador real do outro lado, e controlamos tudo — mas é a forma mais limpa de ver que tipo de contaminação o bundle pega e o que deixa passar. O ponto não é provar que o bundle funciona; é ler onde fica o seu limiar.
 
 ![Populações de cidades limpas vs contaminadas a 30 %.](../figures/fraud_before_after.png)
 
-A leva fabricada é calibrada para parecer superficialmente plausível: amostrada na mesma janela de magnitude dos dados originais, de modo que o sinal de fraude vive na *distribuição de dígitos* e não na ordem de grandeza. Três estratégias de fabricação estão implementadas em `src.fraud`:
+A figura antes-e-depois mostra o mesmo conjunto GeoNames `cities5000` ($n \approx 68{.}000$) antes da contaminação, à esquerda, e depois de substituir 30 % das entradas por valores fabricados, à direita. A curva de Benford não se mexe; o que se mexe são as barras empíricas, e o bundle lê a distância.
 
-1. **Dígito uniforme.** Cada dígito inicial aparece em cerca de $11{,}1\,\%$ das entradas. A violação de manual.
-2. **Números redondos.** Valores se concentram em $100, 200, 250, 500, 1{.}000, 2{.}000, 5{.}000, 10{.}000$, imitando o fraudador que arredonda mentalmente.
-3. **Psicológica.** Humanos pedidos para escrever números "aleatórios" superestimam os dígitos médios 3–6 e subestimam 1 e 9.
+A leva fabricada é calibrada para parecer superficialmente plausível: amostrada na mesma janela de magnitude dos dados originais, de modo que o sinal de fraude vive na *distribuição de dígitos* e não na ordem de grandeza. Este é o modelo de ameaça realista — um fraudador que acerta a escala e erra os dígitos, não um que inventa receitas de nove dígitos para uma pequena empresa. Três estratégias de fabricação estão implementadas em `src.fraud`:
 
-Varrendo a fração de contaminação de 0 % a 100 % e rodando o bundle dos quatro testes 30 vezes em cada nível obtém-se a **curva de poder de detecção**:
+1. **Dígito uniforme.** Cada dígito inicial aparece em cerca de $11{,}1\,\%$ das entradas. A violação de manual — a mais fácil de pegar porque embaralha a curva inteira de uma vez.
+2. **Números redondos.** Valores se concentram em $100, 200, 250, 500, 1{.}000, 2{.}000, 5{.}000, 10{.}000$, imitando o fraudador que arredonda mentalmente. Sutil, porque números redondos preservam um viés de dígito inicial próprio.
+3. **Psicológica.** Humanos pedidos para escrever números "aleatórios" superestimam os dígitos médios 3–6 e subestimam 1 e 9 — um viés cognitivo reproduzível, documentado na literatura experimental.
+
+Cada estratégia é um ataque distinto à curva, e cada uma submete o bundle a um teste de estresse diferente. Para condensar isso numa única imagem de poder de detecção, varra a fração de contaminação de 0 % a 100 % e rode o bundle dos quatro testes 30 vezes em cada nível. O resultado é a **curva de poder de detecção**:
 
 ![Poder de detecção em três estratégias de fabricação no GeoNames cities5000.](../figures/fraud_detection_power.png)
 
 A curva MAD sobe pelos níveis de veredito de Nigrini (aceitável → marginalmente aceitável → não-conformidade) dentro dos primeiros 5–10 % de contaminação. A estatística $\chi^2$ de Pearson — em escala logarítmica — sobe íngreme através do seu valor crítico $\alpha = 0{,}05$ de 15,51 mais ou menos no mesmo ponto. A taxa empírica de rejeição em $\alpha = 0{,}05$ satura próxima de 1 para as três estratégias por volta de 10–15 % de contaminação.
 
-A leitura: nesse tamanho amostral, uma auditoria estilo Benford detecta de modo confiável fraude sempre que 10 % ou mais das entradas forem fabricadas por qualquer das três estratégias. Abaixo de 5 %, o poder de detecção varia — fabricação por números redondos é a mais difícil de pegar porque preserva o viés de dígito inicial de Benford ao mesmo tempo em que o desloca para os dígitos $1$, $2$ e $5$.
+A leitura: nesse tamanho amostral, uma auditoria estilo Benford detecta de modo confiável fraude sempre que 10 % ou mais das entradas forem fabricadas por qualquer das três estratégias. Abaixo de 5 %, o poder de detecção varia — fabricação por números redondos é a mais difícil de pegar porque preserva o viés de dígito inicial de Benford ao mesmo tempo em que o desloca para os dígitos $1$, $2$ e $5$. O bundle não é detector mágico; é um filtro grosseiro que sinaliza a contaminação grossa de modo barato e deixa para o auditor a decisão de onde olhar mais de perto.
 
 Este experimento não é apenas um brinquedo. Casos históricos documentados incluem:
 
@@ -217,19 +219,21 @@ O script `scripts/exp_fraud_demo.py` reproduz o *mecanismo* pelo qual essas audi
 
 ## 7. Quando Benford falha, e por que isso também é útil
 
-A Lei de Benford não é uma lei universal dos números. Aplica-se a conjuntos de dados cujos valores cobrem várias ordens de magnitude *multiplicativamente* e são gerados por um processo que mistura escalas. Falha — de modo agudo — em pelo menos três classes de dados:
+A §6 mostrou o bundle pegando contaminação deliberada. Vale tornar explícito o lado oposto: Benford não é uma lei universal dos números, e existem conjuntos honestos onde ela não tem por que valer. Conhecer a fronteira é parte do uso da ferramenta — aplicar um teste Benford a dados fora da sua faixa de operação produz falsos positivos, não insight. A lei aplica-se a conjuntos cujos valores cobrem várias ordens de magnitude *multiplicativamente* e são gerados por um processo que mistura escalas. Falha — de modo agudo — em pelo menos três classes de dados:
 
-1. **Dados limitados em escala aditiva.** Alturas de adultos, temperaturas corporais, pontuações de QI, notas de prova. Os valores ficam dentro de uma ordem de magnitude, então a log-mantissa $Y$ é fortemente concentrada e a distribuição de primeiro dígito colapsa no dígito que dominar o suporte. O exemplo das alturas na §2 é o caso de manual.
+1. **Dados limitados em escala aditiva.** Alturas de adultos, temperaturas corporais, pontuações de QI, notas de prova. Os valores ficam dentro de uma ordem de magnitude, então a log-mantissa $Y$ é fortemente concentrada e a distribuição de primeiro dígito colapsa no dígito que dominar o suporte. O exemplo das alturas na §2 é o caso de manual — uma única barra alta em $d = 1$ e zeros nos demais.
 
-2. **Identificadores atribuídos.** Telefones, CEPs, números de seguro social, números de RG. São amostrados de um desenho combinatório fixo, não gerados por processo multiplicativo; o dígito inicial é um artefato estrutural da autoridade emissora.
+2. **Identificadores atribuídos.** Telefones, CEPs, números de seguro social, números de RG. São amostrados de um desenho combinatório fixo, não gerados por processo multiplicativo; o dígito inicial é um artefato estrutural da autoridade emissora, não de algum processo aleatório subjacente. Não há nada para um teste de Benford encontrar aqui, e uma "violação" diz apenas que os dados têm uma estrutura deliberada.
 
-3. **Dados truncados.** Qualquer conjunto com piso ou teto rígido distorce a distribuição de primeiro dígito perto do corte. O `cities5000` do GeoNames mostra um pequeno pico em $d = 5$ exatamente por essa razão — toda cidade *logo acima* do limiar de 5.000 habitantes tem 5 inicial.
+3. **Dados truncados.** Qualquer conjunto com piso ou teto rígido distorce a distribuição de primeiro dígito perto do corte. O `cities5000` do GeoNames mostra um pequeno pico em $d = 5$ exatamente por essa razão — toda cidade *logo acima* do limiar de 5.000 habitantes tem 5 inicial. O teste continua funcionando, mas o analista precisa saber que a truncagem está ali antes de ler o pico como fraude.
 
-As falhas são operacionalmente úteis. Um conjunto de dados que *deveria* conformar-se a Benford e não se conforma é um sinal: ou o processo gerador não é o que você pensava, ou os dados foram adulterados. A contabilidade forense usa isso assimetricamente — um conjunto conforme a Benford é não-informativo; um conjunto que falha em Benford é a pergunta que vale a pena fazer.
+As falhas são operacionalmente úteis, e a assimetria é o ponto. Um conjunto de dados que *deveria* conformar-se a Benford e não se conforma é um sinal: ou o processo gerador não é o que você pensava, ou os dados foram adulterados. A contabilidade forense usa isso assimetricamente — um conjunto conforme a Benford é não-informativo por si só; um conjunto que falha em Benford é a pergunta que vale a pena fazer. A lei é mais poderosa não quando confirma, mas quando se recusa a confirmar.
 
 ---
 
 ## 8. Conclusões
+
+Cinco pontos para fechar:
 
 1. **A PMF de Benford $P(d) = \log_{10}(1 + 1/d)$ é estrutural, não coincidência.** Duas derivações não correlacionadas — mantissa log-uniforme e invariância de escala — convergem para a mesma curva. A convergência *é* a evidência.
 
