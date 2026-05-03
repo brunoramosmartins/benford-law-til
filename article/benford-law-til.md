@@ -78,9 +78,9 @@ $$
 
 That is the entire derivation. What looks like a sleight of hand is structural: by trading the multiplicative coordinate $X$ for the additive coordinate $Y$, we have turned the question "what is the first digit?" into a question about lengths on the circle $[0, 1)$, and uniform probability on that circle translates directly into the logarithmic curve.
 
-The figure below makes the argument tangible in two movements. In the top row, the histogram of $Y$ for synthetic samples $X = 10^U$ with $U \sim \mathrm{Uniform}(0, k)$ flattens visibly toward the uniform density on $[0, 1)$ as $k$ grows — by construction, but the convergence is striking. In the bottom row, the first-digit frequencies of the synthetic $k = 6$ sample (left) and of world city populations (right) sit on top of the Benford PMF: the premise implies the curve, and real multi-scale data satisfies the premise.
+The figure below makes the argument tangible in two movements. In the top row, the histogram of the log-mantissa $Y$ for synthetic samples $X = 10^U$ with $U \sim \mathrm{Uniform}(0, k)$ is shown for $k = 0.5,\, 1.5,\, 3.5,\, 8.5$ — deliberately non-integer values, so that the convergence is visible. At $k = 0.5$, $Y$ does not even cover $[0, 1)$ (all mass sits on $[0, 0.5)$); at $k = 1.5$, a clear step at $Y = 0.5$ remains (density $\approx 1.33$ on the first half against $\approx 0.67$ on the second); at $k = 3.5$ the step is gentler; at $k = 8.5$ the histogram is visually flat. The deviation from uniform decays as $1/k$. In the bottom row, the first-digit frequencies of the synthetic $k = 8.5$ sample (left) and of world city populations (right) sit on top of the Benford PMF: the premise implies the curve, and real multi-scale data satisfies the premise.
 
-![Top row: the log-mantissa Y tends to the uniform density as X covers more decades. Bottom row: the first digit follows Benford, on synthetic data on the left and real data on the right.](../figures/log_uniform_intuition.png)
+![Top row: the log-mantissa Y converges to the uniform density as X covers more decades (k = 0.5, 1.5, 3.5, 8.5). Bottom row: the first digit follows Benford, on synthetic data on the left and real data on the right.](../figures/log_uniform_intuition.png)
 
 The substantive question is *why* the premise should hold. Three arguments:
 
