@@ -50,7 +50,7 @@ $$
 X = r \cdot 10^k, \qquad r \in [1, 10), \quad k \in \mathbb{Z}.
 $$
 
-The factor $r$ is the **mantissa** and $k$ the order of magnitude. The first significant digit of $X$ is just $\lfloor r \rfloor$, so all the information relevant to our question lives in $r$ — multiplying $X$ by a power of ten changes $k$ but leaves $r$, and therefore the first digit, untouched. Taking logarithms turns that fact into algebra:
+The factor $r$ is the **mantissa** and $k$ the order of magnitude. The first significant digit of $X$ is just $\lfloor r \rfloor$ (the *floor function*, which returns the greatest integer less than or equal to $r$); we denote this operation by $D(X) := \lfloor r \rfloor$ and, when $X$ is random, treat $D$ as a derived random variable — it is the object whose distribution we are trying to find. All the information relevant to our question lives in $r$: multiplying $X$ by a power of ten changes $k$ but leaves $r$, and therefore the first digit, untouched. Taking logarithms turns that fact into algebra:
 
 $$
 \log_{10}(X) = \log_{10}(r) + k, \qquad \log_{10}(r) \in [0, 1).
@@ -80,7 +80,7 @@ That is the entire derivation. What looks like a sleight of hand is structural: 
 
 The figure below makes the argument tangible in two movements. In the top row, the histogram of $Y$ for synthetic samples $X = 10^U$ with $U \sim \mathrm{Uniform}(0, k)$ flattens visibly toward the uniform density on $[0, 1)$ as $k$ grows — by construction, but the convergence is striking. In the bottom row, the first-digit frequencies of the synthetic $k = 6$ sample (left) and of world city populations (right) sit on top of the Benford PMF: the premise implies the curve, and real multi-scale data satisfies the premise.
 
-![Top row: the log-mantissa $Y$ tends to uniform on $[0,1)$ as $X$ covers more decades. Bottom row: the first digit follows Benford, on synthetic data (left) and real data (right).](../figures/log_uniform_intuition.png)
+![Top row: the log-mantissa Y tends to the uniform density as X covers more decades. Bottom row: the first digit follows Benford, on synthetic data on the left and real data on the right.](../figures/log_uniform_intuition.png)
 
 The substantive question is *why* the premise should hold. Three arguments:
 

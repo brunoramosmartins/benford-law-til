@@ -56,7 +56,7 @@ $$
 X = r \cdot 10^k, \qquad r \in [1, 10), \quad k \in \mathbb{Z}.
 $$
 
-O fator $r$ é a **mantissa** e $k$ a ordem de magnitude. O primeiro dígito significativo de $X$ é simplesmente $\lfloor r \rfloor$, de modo que toda a informação relevante para nossa pergunta vive em $r$ — multiplicar $X$ por uma potência de dez muda $k$ mas não toca em $r$, nem no primeiro dígito. Tomando logaritmos transformamos esse fato em álgebra:
+O fator $r$ é a **mantissa** e $k$ a ordem de magnitude. O primeiro dígito significativo de $X$ é simplesmente $\lfloor r \rfloor$ (a *função piso*, que retorna o maior inteiro menor ou igual a $r$); denotamos essa operação por $D(X) := \lfloor r \rfloor$ e, quando $X$ for aleatório, tratamos $D$ como variável aleatória derivada — é o objeto cuja distribuição queremos descobrir. Toda a informação relevante para nossa pergunta vive em $r$: multiplicar $X$ por uma potência de dez muda $k$ mas não toca em $r$, nem no primeiro dígito. Tomando logaritmos transformamos esse fato em álgebra:
 
 $$
 \log_{10}(X) = \log_{10}(r) + k, \qquad \log_{10}(r) \in [0, 1).
@@ -86,7 +86,7 @@ Essa é toda a derivação. O que parece um truque é estrutural: ao trocar a co
 
 A figura abaixo torna o argumento tangível em dois movimentos. Na linha de cima, o histograma de $Y$ para amostras sintéticas $X = 10^U$ com $U \sim \mathrm{Uniforme}(0, k)$ se aproxima da densidade uniforme em $[0, 1)$ à medida que $k$ cresce — por construção, mas o achatamento é visível. Na linha de baixo, as frequências de primeiro dígito da amostra sintética com $k = 6$ (esquerda) e das populações de cidades do mundo (direita) assentam sobre a PMF de Benford: a premissa implica a curva, e dados reais multiescalares satisfazem a premissa.
 
-![Linha de cima: a log-mantissa $Y$ tende à uniforme em $[0,1)$ conforme $X$ cobre mais décadas. Linha de baixo: o primeiro dígito segue Benford, em dados sintéticos (esquerda) e reais (direita).](../figures/log_uniform_intuition.png)
+![Linha de cima: a log-mantissa Y tende à densidade uniforme conforme X cobre mais décadas. Linha de baixo: o primeiro dígito segue Benford, em dados sintéticos à esquerda e reais à direita.](../figures/log_uniform_intuition.png)
 
 A questão substantiva é *por que* a premissa deveria valer. Três argumentos:
 
