@@ -84,7 +84,7 @@ $$
 
 Essa é toda a derivação. O que parece um truque é estrutural: ao trocar a coordenada multiplicativa $X$ pela coordenada aditiva $Y$, transformamos a pergunta "qual é o primeiro dígito?" numa pergunta sobre comprimentos no círculo $[0, 1)$, e probabilidade uniforme nesse círculo se traduz diretamente na curva logarítmica.
 
-A figura abaixo torna o argumento tangível em dois movimentos. Na linha de cima, o histograma da log-mantissa $Y$ para amostras sintéticas $X = 10^U$ com $U \sim \mathrm{Uniforme}(0, k)$ é mostrado para $k = 0{,}5,\, 1{,}5,\, 3{,}5,\, 8{,}5$ — valores deliberadamente não-inteiros, para que a convergência seja visível. Em $k = 0{,}5$, $Y$ nem cobre $[0, 1)$ (toda a massa está em $[0; 0{,}5)$); em $k = 1{,}5$, há um degrau claro em $Y = 0{,}5$ (densidade $\approx 1{,}33$ na primeira metade contra $\approx 0{,}67$ na segunda); em $k = 3{,}5$ o degrau é mais brando; em $k = 8{,}5$ o histograma é visualmente plano. A diferença em relação à uniforme decai como $1/k$. Na linha de baixo, as frequências de primeiro dígito da amostra sintética com $k = 8{,}5$ (esquerda) e das populações de cidades do mundo (direita) assentam sobre a PMF de Benford: a premissa implica a curva, e dados reais multiescalares satisfazem a premissa.
+A figura abaixo torna o argumento tangível em dois movimentos. Na linha de cima, o histograma da log-mantissa $Y$ para amostras sintéticas $X = 10^U$ com $U \sim \mathrm{Uniforme}(0, k)$ é mostrado para $k = 0{,}5,\, 1{,}5,\, 3{,}5,\, 8{,}5$ — valores deliberadamente não-inteiros, para que a convergência seja visível. Em $k = 0{,}5$, $Y$ nem cobre todo o intervalo unitário — a massa fica concentrada na primeira metade ($Y < 0{,}5$) com densidade $2$, e a segunda metade está vazia; em $k = 1{,}5$, $Y$ já cobre o intervalo todo, mas com um degrau claro em $Y = 0{,}5$ (densidade $\approx 1{,}33$ na primeira metade contra $\approx 0{,}67$ na segunda); em $k = 3{,}5$ o degrau é mais brando; em $k = 8{,}5$ o histograma é visualmente plano. A diferença em relação à uniforme decai como $1/k$. Na linha de baixo, as frequências de primeiro dígito da amostra sintética com $k = 8{,}5$ (esquerda) e das populações de cidades do mundo (direita) assentam sobre a PMF de Benford: a premissa implica a curva, e dados reais multiescalares satisfazem a premissa.
 
 ![Linha de cima: a log-mantissa Y converge à densidade uniforme conforme X cobre mais décadas (k = 0,5; 1,5; 3,5; 8,5). Linha de baixo: o primeiro dígito segue Benford, em dados sintéticos à esquerda e reais à direita.](../figures/log_uniform_intuition.png)
 
@@ -104,7 +104,7 @@ Logo a primeira derivação responde à pergunta "*dada* uma mantissa log-unifor
 
 ## 4. Segunda derivação: invariância de escala força $1/x$
 
-Moeda é a motivação mais limpa. Tome um conjunto de receitas em BRL. Converta para USD multiplicando cada entrada por alguma taxa de câmbio $c$. A distribuição de primeiro dígito não deveria mudar só porque rotulamos a unidade de outra forma. Formalmente:
+Moeda é a motivação mais limpa. Tome um conjunto de receitas em BRL. Converta para USD multiplicando cada entrada por alguma taxa de câmbio $c$. A distribuição de primeiro dígito não deveria mudar só porque rotulamos a unidade de outra forma — o dólar e o real são apenas etiquetas, e a atividade econômica subjacente não sabe qual escolhemos. Essa expectativa informal é uma afirmação de *simetria* sobre os dados, não uma afirmação estatística. Formalmente:
 
 **Invariância de escala.** Para todo $c > 0$ e todo dígito $d$ de $1$ a $9$,
 
@@ -112,19 +112,19 @@ $$
 \Pr[D(cX) = d] = \Pr[D(X) = d].
 $$
 
-É uma restrição forte. Exclui, por exemplo, a distribuição uniforme nos dígitos — uniforme em uma moeda não será uniforme depois de multiplicar cada valor por $\pi$.
+É uma restrição forte. Exclui, por exemplo, a distribuição uniforme nos dígitos — uniforme em uma moeda não será uniforme depois de multiplicar cada valor por $\pi$. Antes mesmo de qualquer derivação, o requisito já restringe sensivelmente as distribuições candidatas.
 
-Tome logaritmos novamente. Com $Y = \log_{10}(X) \bmod 1$ e $\alpha = \log_{10}(c) \bmod 1$, a multiplicação $X \mapsto cX$ age sobre $Y$ como uma translação:
+O movimento natural é passar de novo aos logaritmos, porque o logaritmo transforma multiplicação em soma. Com $Y = \log_{10}(X) \bmod 1$ e $\alpha = \log_{10}(c) \bmod 1$, a operação $X \mapsto cX$ vira $\log_{10}(X) \mapsto \log_{10}(X) + \log_{10}(c)$, o que na log-mantissa é uma translação:
 
 $$
 Y \mapsto (Y + \alpha) \bmod 1.
 $$
 
-O conjunto de $\alpha$ atingíveis enquanto $c$ percorre $(0, \infty)$ é o intervalo $[0, 1)$ inteiro. Logo invariância de escala é *equivalente* a invariância por translação de $Y$ no círculo $\mathbb{R}/\mathbb{Z}$. E existe exatamente uma distribuição de probabilidade invariante por translação no círculo: a uniforme.
+Conforme $c$ percorre $(0, \infty)$, $\log_{10}(c)$ percorre todo o $\mathbb{R}$, então $\alpha = \log_{10}(c) \bmod 1$ assume todo valor em $[0, 1)$. Invariância de escala em $X$ é portanto *equivalente* a invariância por translação de $Y$ no círculo $\mathbb{R}/\mathbb{Z}$. E existe exatamente uma distribuição de probabilidade invariante por translação no círculo: a uniforme. A intuição é de simetria — qualquer outra distribuição teria um "ponto preferido" que a translação deslocaria, contradizendo a invariância. (Formalmente, é a unicidade da medida de Haar em um grupo compacto.)
 
 Invariância de escala portanto força $Y \sim \mathrm{Uniforme}(0, 1)$, o que pela §3 força a PMF de Benford. O argumento é limpo o suficiente para merecer um nome; é o **teorema de Pinkham**.
 
-Há uma rota complementar pela *densidade* em vez de pela log-mantissa. Em uma janela finita $[a, b] \subset (0, \infty)$ a única densidade de probabilidade invariante por multiplicação é
+Uma rota complementar trabalha diretamente com a *densidade* sobre $X$, sem passar pela log-mantissa, e vale a pena ver porque torna explícita a forma $1/x$. Sob $X \mapsto cX$ uma densidade de probabilidade se transforma como $f(x) \mapsto \frac{1}{c} f(x/c)$. Exigir que isso seja igual a $f(x)$ para todo $c > 0$ força $f(x) \propto 1/x$. Assim, em uma janela finita $[a, b] \subset (0, \infty)$ a única densidade de probabilidade invariante por multiplicação é
 
 $$
 f(x) = \frac{1}{x \log(b/a)}.
@@ -136,7 +136,7 @@ $$
 P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
-O fator $10^k$ cancela. Esse cancelamento *é* a invariância de escala, em forma aritmética.
+O fator $10^k$ cancela. Esse cancelamento *é* a invariância de escala, em forma aritmética: a probabilidade do primeiro dígito não depende de qual década restringimos.
 
 ![Multiplicando populações de cidades por várias constantes. A distribuição de primeiro dígito não se mexe.](../figures/scale_invariance.png)
 
@@ -152,9 +152,11 @@ A próxima pergunta é operacional: dado um conjunto de dados real, como *testam
 
 ## 5. Testando conformidade: $\chi^2$, KS, MAD, $Z$
 
-Quatro testes, quatro sensibilidades. Tome uma distribuição empírica de primeiro dígito $\hat P(1), \ldots, \hat P(9)$ em uma amostra de tamanho $n$ e pergunte: o quão próxima está da PMF de Benford?
+A lei é estrutural, mas dados reais satisfazem a premissa apenas aproximadamente — uma amostra finita nunca pousa exatamente sobre a curva de Benford, e mesmo conjuntos com várias décadas de cobertura carregam uma ondulação residual. Resta portanto uma pergunta empírica: quão próximo é próximo o suficiente para chamarmos os dados de conformes, e que tipo de desvio nos preocupa? Audiências diferentes querem distâncias diferentes — quem testa hipótese quer um p-valor, quem audita quer uma escala de veredito que não colapse em tamanhos industriais de amostra, quem investiga quer saber *qual* dígito está fora. Nenhuma estatística sozinha responde aos três, então a prática padrão é rodar um pequeno bundle. Quatro testes, quatro sensibilidades. Tome uma distribuição empírica de primeiro dígito $\hat P(1), \ldots, \hat P(9)$ em uma amostra de tamanho $n$ e pergunte: o quão próxima está da PMF de Benford (a função massa de probabilidade $P(d) = \log_{10}(1 + 1/d)$, $d = 1, \ldots, 9$)?
 
-![O bundle dos quatro testes em três conjuntos de referência.](../figures/conformity_test_demo.png)
+![Três conjuntos de referência — populações de cidades, Fibonacci, alturas adultas — com os vereditos dos quatro testes reportados no título de cada painel.](../figures/conformity_test_demo.png)
+
+A figura é o catálogo: três conjuntos de referência (um real e conforme, um sintético e conforme, um sintético que falha), cada painel carregando *os quatro* vereditos no título. São três painéis, não quatro — um por dataset; os quatro testes aparecem por painel. O layout espelha como o bundle é usado na prática: um conjunto de dados, quatro números, um veredito.
 
 **$\chi^2$ de Pearson.** Trate o vetor de contagens $(O_1, \ldots, O_9)$ como multinomial com parâmetros $(n; P(1), \ldots, P(9))$ sob a hipótese nula. A estatística
 
@@ -162,15 +164,15 @@ $$
 \chi^2 = \sum_{d=1}^{9} \frac{(O_d - n P(d))^2}{n P(d)}
 $$
 
-é assintoticamente $\chi^2_8$ — a restrição $\sum_d O_d = n$ remove um grau de liberdade das nove células. Rejeita-se em $\alpha = 0{,}05$ se $\chi^2 > 15{,}51$. O qui-quadrado é o teste de hipótese honesto para $n$ moderado, mas tem uma falha conhecida: para $n$ muito grande (da ordem de $10^6$), até desvios microscópicos (em torno de $0{,}001$ por célula) tornam-se "estatisticamente significativos". O teste responde "o desvio é literalmente zero?", o que raramente é a pergunta de interesse na prática.
+é assintoticamente $\chi^2_8$ — a restrição $\sum_d O_d = n$ remove um grau de liberdade das nove células. Rejeita-se em $\alpha = 0{,}05$ se $\chi^2 > 15{,}51$. O qui-quadrado é o teste de hipótese honesto para $n$ moderado, mas tem uma falha conhecida: para $n$ muito grande (da ordem de $10^6$), até desvios microscópicos (em torno de $0{,}001$ por célula) tornam-se "estatisticamente significativos". O teste responde "o desvio é literalmente zero?", o que raramente é a pergunta de interesse na prática. Essa falha motiva as duas estatísticas seguintes.
 
-**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, onde $F$ é a CDF cumulativa de Benford. Sensível a *deriva sistemática* ao longo das células de modo que o $\chi^2$ dilui na média. A distribuição assintótica de Kolmogorov fornece um p-valor via $\sqrt{n}\, D_n$, mas é conservadora numa distribuição discreta — útil como diagnóstico, não como teste afiado.
+**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, onde $F$ é a CDF cumulativa de Benford. Sensível a *deriva sistemática* ao longo das células de modo que o $\chi^2$ dilui na média — se o desvio é concentrado num degrau ou numa rampa em vez de espalhado, o KS percebe e o $\chi^2$ pode não perceber. A distribuição assintótica de Kolmogorov fornece um p-valor via $\sqrt{n}\, D_n$, mas é conservadora numa distribuição discreta — útil como diagnóstico, não como teste afiado. O KS ainda herda o problema de inflação para $n$ grande, e é isso que o MAD endereça.
 
-**MAD com limiares de Nigrini.** A estatística mais simples, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, é **invariante ao tamanho da amostra**: um vetor de proporções produz o mesmo valor para $n = 1{.}000$ ou $n = 10^7$. *Benford's Law* (Wiley, 2012) de Mark Nigrini calibra uma escala de veredito: $< 0{,}006$ "conformidade próxima"; $< 0{,}012$ "aceitável"; $< 0{,}015$ "marginalmente aceitável"; $\ge 0{,}015$ "não-conformidade". MAD não tem distribuição amostral formal nem p-valor — mas é o único dos quatro que escala razoavelmente para dados de auditoria forense onde $n \gg 10^5$.
+**MAD com limiares de Nigrini.** A estatística mais simples, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, é **invariante ao tamanho da amostra**: um vetor de proporções produz o mesmo valor para $n = 1{.}000$ ou $n = 10^7$. *Benford's Law* (Wiley, 2012) de Mark Nigrini calibra uma escala de veredito: $< 0{,}006$ "conformidade próxima"; $< 0{,}012$ "aceitável"; $< 0{,}015$ "marginalmente aceitável"; $\ge 0{,}015$ "não-conformidade". MAD não tem distribuição amostral formal nem p-valor — mas é o único dos quatro que escala razoavelmente para dados de auditoria forense onde $n \gg 10^5$. O preço é que o MAD agrega sobre as nove células, então não diz *onde* mora o desvio — esse é o trabalho do último teste.
 
 **$Z$ por dígito.** Para cada $d$, trate $O_d \sim \mathrm{Binomial}(n, P(d))$ e calcule o $z_d$ bilateral padronizado (com correção de continuidade de Yates). Rejeita-se em $\alpha = 0{,}05$ se $|z_d| > 1{,}96$. O $Z$ por dígito não controla a taxa de erro familiar entre as nove células — é um *diagnóstico*: se só a célula 1 é sinalizada, faltam 1s iniciais nos dados; se as células 8 e 9 são sinalizadas, os dados mostram viés de números redondos.
 
-A regra para escolher entre os quatro:
+Cada teste responde a uma pergunta diferente, então a regra para escolher é casar a pergunta com o teste:
 
 | Pergunta | Teste |
 |---|---|
@@ -179,29 +181,31 @@ A regra para escolher entre os quatro:
 | Auditoria em escala forense, $n \gg 10^5$ | MAD |
 | *Qual* dígito está fora? | $Z$ por dígito |
 
-Na prática, rode os quatro. A implementação está em `src.conformity.conformity_report`.
+Na prática, rode os quatro — eles custam quase nada após calcular $\hat P$ uma vez, e cada um pega um tipo de desvio que os outros perdem. A implementação está em `src.conformity.conformity_report`.
 
 ---
 
 ## 6. Demo de fraude: quando números fabricados se entregam
 
-A Fase 5 fecha o ciclo. Pegue um conjunto limpo, conforme a Benford, substitua uma fração de suas entradas por valores fabricados e veja o bundle dos quatro testes cruzar de *aceitar* para *rejeitar*.
+A §5 montou o bundle de conformidade em dados limpos; a §6 o coloca para trabalhar em cenário adversarial. Pegue um conjunto limpo, conforme a Benford, substitua uma fração de suas entradas por valores fabricados e veja o bundle dos quatro testes cruzar de *aceitar* para *rejeitar*. O setup é deliberadamente estilizado — não há fraudador real do outro lado, e controlamos tudo — mas é a forma mais limpa de ver que tipo de contaminação o bundle pega e o que deixa passar. O ponto não é provar que o bundle funciona; é ler onde fica o seu limiar.
 
 ![Populações de cidades limpas vs contaminadas a 30 %.](../figures/fraud_before_after.png)
 
-A leva fabricada é calibrada para parecer superficialmente plausível: amostrada na mesma janela de magnitude dos dados originais, de modo que o sinal de fraude vive na *distribuição de dígitos* e não na ordem de grandeza. Três estratégias de fabricação estão implementadas em `src.fraud`:
+A figura antes-e-depois mostra o mesmo conjunto GeoNames `cities5000` ($n \approx 68{.}000$) antes da contaminação, à esquerda, e depois de substituir 30 % das entradas por valores fabricados, à direita. A curva de Benford não se mexe; o que se mexe são as barras empíricas, e o bundle lê a distância.
 
-1. **Dígito uniforme.** Cada dígito inicial aparece em cerca de $11{,}1\,\%$ das entradas. A violação de manual.
-2. **Números redondos.** Valores se concentram em $100, 200, 250, 500, 1{.}000, 2{.}000, 5{.}000, 10{.}000$, imitando o fraudador que arredonda mentalmente.
-3. **Psicológica.** Humanos pedidos para escrever números "aleatórios" superestimam os dígitos médios 3–6 e subestimam 1 e 9.
+A leva fabricada é calibrada para parecer superficialmente plausível: amostrada na mesma janela de magnitude dos dados originais, de modo que o sinal de fraude vive na *distribuição de dígitos* e não na ordem de grandeza. Este é o modelo de ameaça realista — um fraudador que acerta a escala e erra os dígitos, não um que inventa receitas de nove dígitos para uma pequena empresa. Três estratégias de fabricação estão implementadas em `src.fraud`:
 
-Varrendo a fração de contaminação de 0 % a 100 % e rodando o bundle dos quatro testes 30 vezes em cada nível obtém-se a **curva de poder de detecção**:
+1. **Dígito uniforme.** Cada dígito inicial aparece em cerca de $11{,}1\,\%$ das entradas. A violação de manual — a mais fácil de pegar porque embaralha a curva inteira de uma vez.
+2. **Números redondos.** Valores se concentram em $100, 200, 250, 500, 1{.}000, 2{.}000, 5{.}000, 10{.}000$, imitando o fraudador que arredonda mentalmente. Sutil, porque números redondos preservam um viés de dígito inicial próprio.
+3. **Psicológica.** Humanos pedidos para escrever números "aleatórios" superestimam os dígitos médios 3–6 e subestimam 1 e 9 — um viés cognitivo reproduzível, documentado na literatura experimental.
+
+Cada estratégia é um ataque distinto à curva, e cada uma submete o bundle a um teste de estresse diferente. Para condensar isso numa única imagem de poder de detecção, varra a fração de contaminação de 0 % a 100 % e rode o bundle dos quatro testes 30 vezes em cada nível. O resultado é a **curva de poder de detecção**:
 
 ![Poder de detecção em três estratégias de fabricação no GeoNames cities5000.](../figures/fraud_detection_power.png)
 
 A curva MAD sobe pelos níveis de veredito de Nigrini (aceitável → marginalmente aceitável → não-conformidade) dentro dos primeiros 5–10 % de contaminação. A estatística $\chi^2$ de Pearson — em escala logarítmica — sobe íngreme através do seu valor crítico $\alpha = 0{,}05$ de 15,51 mais ou menos no mesmo ponto. A taxa empírica de rejeição em $\alpha = 0{,}05$ satura próxima de 1 para as três estratégias por volta de 10–15 % de contaminação.
 
-A leitura: nesse tamanho amostral, uma auditoria estilo Benford detecta de modo confiável fraude sempre que 10 % ou mais das entradas forem fabricadas por qualquer das três estratégias. Abaixo de 5 %, o poder de detecção varia — fabricação por números redondos é a mais difícil de pegar porque preserva o viés de dígito inicial de Benford ao mesmo tempo em que o desloca para os dígitos $1$, $2$ e $5$.
+A leitura: nesse tamanho amostral, uma auditoria estilo Benford detecta de modo confiável fraude sempre que 10 % ou mais das entradas forem fabricadas por qualquer das três estratégias. Abaixo de 5 %, o poder de detecção varia — fabricação por números redondos é a mais difícil de pegar porque preserva o viés de dígito inicial de Benford ao mesmo tempo em que o desloca para os dígitos $1$, $2$ e $5$. O bundle não é detector mágico; é um filtro grosseiro que sinaliza a contaminação grossa de modo barato e deixa para o auditor a decisão de onde olhar mais de perto.
 
 Este experimento não é apenas um brinquedo. Casos históricos documentados incluem:
 
@@ -215,19 +219,21 @@ O script `scripts/exp_fraud_demo.py` reproduz o *mecanismo* pelo qual essas audi
 
 ## 7. Quando Benford falha, e por que isso também é útil
 
-A Lei de Benford não é uma lei universal dos números. Aplica-se a conjuntos de dados cujos valores cobrem várias ordens de magnitude *multiplicativamente* e são gerados por um processo que mistura escalas. Falha — de modo agudo — em pelo menos três classes de dados:
+A §6 mostrou o bundle pegando contaminação deliberada. Vale tornar explícito o lado oposto: Benford não é uma lei universal dos números, e existem conjuntos honestos onde ela não tem por que valer. Conhecer a fronteira é parte do uso da ferramenta — aplicar um teste Benford a dados fora da sua faixa de operação produz falsos positivos, não insight. A lei aplica-se a conjuntos cujos valores cobrem várias ordens de magnitude *multiplicativamente* e são gerados por um processo que mistura escalas. Falha — de modo agudo — em pelo menos três classes de dados:
 
-1. **Dados limitados em escala aditiva.** Alturas de adultos, temperaturas corporais, pontuações de QI, notas de prova. Os valores ficam dentro de uma ordem de magnitude, então a log-mantissa $Y$ é fortemente concentrada e a distribuição de primeiro dígito colapsa no dígito que dominar o suporte. O exemplo das alturas na §2 é o caso de manual.
+1. **Dados limitados em escala aditiva.** Alturas de adultos, temperaturas corporais, pontuações de QI, notas de prova. Os valores ficam dentro de uma ordem de magnitude, então a log-mantissa $Y$ é fortemente concentrada e a distribuição de primeiro dígito colapsa no dígito que dominar o suporte. O exemplo das alturas na §2 é o caso de manual — uma única barra alta em $d = 1$ e zeros nos demais.
 
-2. **Identificadores atribuídos.** Telefones, CEPs, números de seguro social, números de RG. São amostrados de um desenho combinatório fixo, não gerados por processo multiplicativo; o dígito inicial é um artefato estrutural da autoridade emissora.
+2. **Identificadores atribuídos.** Telefones, CEPs, números de seguro social, números de RG. São amostrados de um desenho combinatório fixo, não gerados por processo multiplicativo; o dígito inicial é um artefato estrutural da autoridade emissora, não de algum processo aleatório subjacente. Não há nada para um teste de Benford encontrar aqui, e uma "violação" diz apenas que os dados têm uma estrutura deliberada.
 
-3. **Dados truncados.** Qualquer conjunto com piso ou teto rígido distorce a distribuição de primeiro dígito perto do corte. O `cities5000` do GeoNames mostra um pequeno pico em $d = 5$ exatamente por essa razão — toda cidade *logo acima* do limiar de 5.000 habitantes tem 5 inicial.
+3. **Dados truncados.** Qualquer conjunto com piso ou teto rígido distorce a distribuição de primeiro dígito perto do corte. O `cities5000` do GeoNames mostra um pequeno pico em $d = 5$ exatamente por essa razão — toda cidade *logo acima* do limiar de 5.000 habitantes tem 5 inicial. O teste continua funcionando, mas o analista precisa saber que a truncagem está ali antes de ler o pico como fraude.
 
-As falhas são operacionalmente úteis. Um conjunto de dados que *deveria* conformar-se a Benford e não se conforma é um sinal: ou o processo gerador não é o que você pensava, ou os dados foram adulterados. A contabilidade forense usa isso assimetricamente — um conjunto conforme a Benford é não-informativo; um conjunto que falha em Benford é a pergunta que vale a pena fazer.
+As falhas são operacionalmente úteis, e a assimetria é o ponto. Um conjunto de dados que *deveria* conformar-se a Benford e não se conforma é um sinal: ou o processo gerador não é o que você pensava, ou os dados foram adulterados. A contabilidade forense usa isso assimetricamente — um conjunto conforme a Benford é não-informativo por si só; um conjunto que falha em Benford é a pergunta que vale a pena fazer. A lei é mais poderosa não quando confirma, mas quando se recusa a confirmar.
 
 ---
 
 ## 8. Conclusões
+
+Cinco pontos para fechar:
 
 1. **A PMF de Benford $P(d) = \log_{10}(1 + 1/d)$ é estrutural, não coincidência.** Duas derivações não correlacionadas — mantissa log-uniforme e invariância de escala — convergem para a mesma curva. A convergência *é* a evidência.
 

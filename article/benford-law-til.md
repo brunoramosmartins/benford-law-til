@@ -4,6 +4,12 @@
 
 ---
 
+## Why I'm writing about this
+
+I recently reread *The Drunkard's Walk* and stumbled again on the paragraph where Mlodinow mentions, almost in passing, Benford's Law — the uncomfortable idea that the first digit of "any" natural dataset is not uniformly distributed but follows a logarithmic curve. On first reading I had accepted the fact as a curiosity; this time I wanted to understand why. What began as a margin note turned into this TIL: an honest attempt to reconstruct the law from two independent arguments, watch the data fit the curve, and close the loop with a concrete application — fraud detection. What follows is the clean notebook of that rereading.
+
+---
+
 ## 1. The worn pages of a logarithm table
 
 In 1881 the astronomer Simon Newcomb noticed something odd while flipping through his copy of a book of logarithms. The early pages — those for numbers starting with 1 — were filthy and dog-eared; the later pages, for numbers starting with 9, were crisp and clean. A logarithm table is the most stubbornly mechanical of references. There is no plot, no narrative, no way for some chapters to be more interesting than others. So why were the early pages worn out?
@@ -98,7 +104,7 @@ So the first derivation answers the question "*given* a log-uniform mantissa, wh
 
 ## 4. Second derivation: scale invariance forces $1/x$
 
-Currency is the cleanest motivation. Take a dataset of revenues in BRL. Convert to USD by multiplying every entry by some exchange rate $c$. The leading-digit distribution should not change just because we relabelled the unit. Formally:
+Currency is the cleanest motivation. Take a dataset of revenues in BRL. Convert to USD by multiplying every entry by some exchange rate $c$. The leading-digit distribution should not change just because we relabelled the unit — the dollar and the real are arbitrary tags, and the underlying economic activity does not know which one we picked. That informal expectation is a *symmetry* claim about the data, not a statistical one. Formally:
 
 **Scale invariance.** For every $c > 0$ and every digit $d$ from $1$ to $9$,
 
@@ -106,19 +112,19 @@ $$
 \Pr[D(cX) = d] = \Pr[D(X) = d].
 $$
 
-This is a strong constraint. It rules out, for example, the uniform distribution on digits — uniform under one currency will not be uniform after multiplying every value by $\pi$.
+This is a strong constraint. It rules out, for example, the uniform distribution on digits — uniform under one currency will not be uniform after multiplying every value by $\pi$. Even before any derivation, the requirement already narrows the candidate distributions sharply.
 
-Take logs again. With $Y = \log_{10}(X) \bmod 1$ and $\alpha = \log_{10}(c) \bmod 1$, the multiplication $X \mapsto cX$ acts on $Y$ as a translation:
+The natural move is again to pass to logs, because logs turn multiplication into addition. With $Y = \log_{10}(X) \bmod 1$ and $\alpha = \log_{10}(c) \bmod 1$, the operation $X \mapsto cX$ becomes $\log_{10}(X) \mapsto \log_{10}(X) + \log_{10}(c)$, which on the log-mantissa is a translation:
 
 $$
 Y \mapsto (Y + \alpha) \bmod 1.
 $$
 
-The set of attainable $\alpha$ as $c$ ranges over $(0, \infty)$ is the entire interval $[0, 1)$. So scale invariance is *equivalent* to translation invariance of $Y$ on the circle $\mathbb{R}/\mathbb{Z}$. And there is exactly one translation-invariant probability distribution on the circle: the uniform distribution.
+As $c$ ranges over $(0, \infty)$, $\log_{10}(c)$ ranges over all of $\mathbb{R}$, so $\alpha = \log_{10}(c) \bmod 1$ takes every value in $[0, 1)$. Scale invariance of $X$ is therefore *equivalent* to translation invariance of $Y$ on the circle $\mathbb{R}/\mathbb{Z}$. And there is exactly one translation-invariant probability distribution on the circle: the uniform distribution. The intuition is symmetry — any other distribution would have a "preferred point" that translation would move, contradicting invariance. (Formally, this is the uniqueness of Haar measure on a compact group.)
 
 Scale invariance therefore forces $Y \sim \mathrm{Uniform}(0, 1)$, which by §3 forces the Benford PMF. The argument is clean enough to deserve a name; it is **Pinkham's theorem**.
 
-There is a complementary route through the *density* rather than the log-mantissa. On a finite window $[a, b] \subset (0, \infty)$ the only probability density invariant under multiplication is
+A complementary route works directly with the *density* on $X$ rather than passing through the log-mantissa, and is worth seeing because it makes the $1/x$ shape explicit. Under $X \mapsto cX$ a probability density transforms as $f(x) \mapsto \frac{1}{c} f(x/c)$. Demanding that this equal $f(x)$ for every $c > 0$ forces $f(x) \propto 1/x$. So on a finite window $[a, b] \subset (0, \infty)$ the only probability density invariant under multiplication is
 
 $$
 f(x) = \frac{1}{x \log(b/a)}.
@@ -130,7 +136,7 @@ $$
 P(D = d) = \int_{d \cdot 10^k}^{(d+1) \cdot 10^k} \frac{1}{x \ln 10}\, dx = \log_{10}\left(1 + \frac{1}{d}\right).
 $$
 
-The factor $10^k$ cancels. That cancellation *is* the scale invariance, made arithmetic.
+The factor $10^k$ cancels. That cancellation *is* the scale invariance, made arithmetic: the leading-digit probability does not depend on which decade we restrict to.
 
 ![Multiplying world city populations by various constants. The first-digit distribution does not move.](../figures/scale_invariance.png)
 
@@ -146,9 +152,11 @@ The next question is operational: given a real dataset, how do we *test* whether
 
 ## 5. Testing conformity: $\chi^2$, KS, MAD, $Z$
 
-Four tests, four sensitivities. Take an empirical first-digit distribution $\hat P(1), \ldots, \hat P(9)$ on a sample of size $n$, and ask: how close is it to the Benford PMF?
+The law is structural, but real data only approximately satisfies the premise — a finite sample never sits exactly on the Benford curve, and even multi-decade datasets carry a residual ripple. So an empirical question always remains: how close is close enough to call the data conforming, and what kind of deviation are we worried about? Different audiences want different gaps — a hypothesis tester wants a p-value, an auditor wants a verdict scale that does not collapse at industrial sample sizes, a detective wants to know *which* digit is off. No single statistic answers all three, so the standard practice is to run a small bundle. Four tests, four sensitivities. Take an empirical first-digit distribution $\hat P(1), \ldots, \hat P(9)$ on a sample of size $n$ and ask: how close is it to the Benford PMF (the probability mass function $P(d) = \log_{10}(1 + 1/d)$, $d = 1, \ldots, 9$)?
 
-![The four-test bundle on three reference datasets.](../figures/conformity_test_demo.png)
+![Three reference datasets — world cities, Fibonacci, adult heights — with all four test verdicts reported in each panel's title.](../figures/conformity_test_demo.png)
+
+The figure is the catalog: three reference datasets (one real-and-conforming, one synthetic-and-conforming, one synthetic-and-failing), each panel carrying *all four* test outcomes in its title. There are three panels, not four — one per dataset; the four tests are reported per panel. The layout mirrors how the bundle is used in practice: one dataset, four numbers, one verdict.
 
 **Pearson $\chi^2$.** Treat the count vector $(O_1, \ldots, O_9)$ as multinomial with parameters $(n; P(1), \ldots, P(9))$ under the null. The test statistic
 
@@ -156,15 +164,15 @@ $$
 \chi^2 = \sum_{d=1}^{9} \frac{(O_d - n P(d))^2}{n P(d)}
 $$
 
-is asymptotically $\chi^2_8$ — the constraint $\sum_d O_d = n$ removes one degree of freedom from the nine cells. Reject at $\alpha = 0.05$ if $\chi^2 > 15.51$. Chi-squared is the honest hypothesis test for moderate $n$, but it has a known defect: at very large $n$ (on the order of $10^6$), even microscopic deviations (about $0.001$ per cell) become "statistically significant". The test answers the question "is the deviation literally zero?", which is rarely the question of interest in practice.
+is asymptotically $\chi^2_8$ — the constraint $\sum_d O_d = n$ removes one degree of freedom from the nine cells. Reject at $\alpha = 0.05$ if $\chi^2 > 15.51$. Chi-squared is the honest hypothesis test for moderate $n$, but it has a known defect: at very large $n$ (on the order of $10^6$), even microscopic deviations (about $0.001$ per cell) become "statistically significant". The test answers "is the deviation literally zero?", which is rarely the question of interest in practice. That defect is what motivates the next two statistics.
 
-**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, where $F$ is the cumulative Benford CDF. Sensitive to *systematic* drift across the cells in a way $\chi^2$ averages away. The asymptotic Kolmogorov distribution gives a p-value via $\sqrt{n}\, D_n$, but it is conservative on a discrete distribution — useful as a diagnostic, not as a sharp test.
+**Kolmogorov–Smirnov.** $D_n = \max_d |F_n(d) - F(d)|$, where $F$ is the cumulative Benford CDF. Sensitive to *systematic* drift across the cells in a way $\chi^2$ averages away — if the deviation is concentrated as a step or a ramp rather than scattered, KS notices and $\chi^2$ may not. The asymptotic Kolmogorov distribution gives a p-value via $\sqrt{n}\, D_n$, but it is conservative on a discrete distribution — useful as a diagnostic, not as a sharp test. KS still inherits the large-$n$ inflation problem, which is what MAD addresses.
 
-**MAD with Nigrini's thresholds.** The simplest statistic, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, is **sample-size invariant**: a given proportion vector yields the same value at $n = 1{,}000$ or $n = 10^7$. Mark Nigrini's *Benford's Law* (Wiley, 2012) calibrates a verdict scale: $< 0.006$ "close conformity"; $< 0.012$ "acceptable"; $< 0.015$ "marginally acceptable"; $\ge 0.015$ "non-conformity". MAD has no formal sampling distribution and no p-value — but it is the only one of the four that scales sensibly to forensic-audit datasets where $n \gg 10^5$.
+**MAD with Nigrini's thresholds.** The simplest statistic, $\mathrm{MAD} = \tfrac{1}{9} \sum_d |\hat P(d) - P(d)|$, is **sample-size invariant**: a given proportion vector yields the same value at $n = 1{,}000$ or $n = 10^7$. Mark Nigrini's *Benford's Law* (Wiley, 2012) calibrates a verdict scale: $< 0.006$ "close conformity"; $< 0.012$ "acceptable"; $< 0.015$ "marginally acceptable"; $\ge 0.015$ "non-conformity". MAD has no formal sampling distribution and no p-value — but it is the only one of the four that scales sensibly to forensic-audit datasets where $n \gg 10^5$. The price is that MAD aggregates across the nine cells, so it cannot tell you *where* the deviation lives — that is the job of the last test.
 
 **Per-digit $Z$.** For each $d$, treat $O_d \sim \mathrm{Binomial}(n, P(d))$ and compute the standardized two-sided $z_d$ (with Yates' continuity correction). Reject at $\alpha = 0.05$ if $|z_d| > 1.96$. Per-digit $Z$ does not control the family-wise error rate across the nine cells — it is a *diagnostic*: if cell 1 alone is flagged, the data are short of leading 1s; if cells 8 and 9 are flagged, the data show round-number bias.
 
-The rule for choosing among the four:
+Each test answers a different question, so the rule for choosing is to match the question to the test:
 
 | Question | Test |
 |---|---|
@@ -173,29 +181,31 @@ The rule for choosing among the four:
 | Forensic-scale audit, $n \gg 10^5$ | MAD |
 | *Which* digit is off? | per-digit $Z$ |
 
-In practice, run all four. The implementation is `src.conformity.conformity_report`.
+In practice, run all four — they cost almost nothing on top of computing $\hat P$ once, and each catches a kind of deviation the others miss. The implementation is `src.conformity.conformity_report`.
 
 ---
 
 ## 6. Fraud demo: when fabricated numbers betray themselves
 
-Phase 5 closes the loop. Take a clean Benford-conforming dataset, replace a fraction of its entries with fabricated values, and watch the four-test bundle cross from *accept* to *reject*.
+§5 set up the conformity bundle on clean data; §6 puts it to work in an adversarial setting. Take a clean Benford-conforming dataset, replace a fraction of its entries with fabricated values, and watch the four-test bundle cross from *accept* to *reject*. The setup is deliberately stylised — there is no real fraudster on the other side, and we control everything — but it is the cleanest way to see what kind of contamination the bundle catches and what it lets through. The point is not to prove that the bundle works; it is to read off where its threshold sits.
 
 ![Clean vs 30%-contaminated city populations.](../figures/fraud_before_after.png)
 
-The fabricated batch is calibrated to look superficially plausible: drawn over the same magnitude window as the original data, so the fraud signal lives in the *digit distribution* and not in the order of magnitude. Three fabrication strategies are implemented in `src.fraud`:
+The before-and-after figure shows the same GeoNames `cities5000` dataset ($n \approx 68{,}000$) before contamination, on the left, and after replacing 30 % of its entries with fabricated values, on the right. The Benford curve does not move; what moves are the empirical bars, and the bundle reads off the gap.
 
-1. **Uniform-digit.** Each leading digit appears in about $11.1\,\%$ of the entries. The textbook violation.
-2. **Round numbers.** Values cluster at $100, 200, 250, 500, 1{,}000, 2{,}000, 5{,}000, 10{,}000$, mimicking the fraudster who rounds mentally.
-3. **Psychological.** Humans asked to write "random" numbers over-pick the mid digits 3–6 and under-pick 1 and 9.
+The fabricated batch is calibrated to look superficially plausible: drawn over the same magnitude window as the original data, so the fraud signal lives in the *digit distribution* and not in the order of magnitude. This is the realistic threat model — a fraudster who copies the right scale and gets the digits wrong, not one who invents nine-digit revenues for a small business. Three fabrication strategies are implemented in `src.fraud`:
 
-Sweeping the contamination fraction from 0 % to 100 % and running the four-test bundle 30 times at each level gives the **detection-power curve**:
+1. **Uniform-digit.** Each leading digit appears in about $11.1\,\%$ of the entries. The textbook violation — the easiest to catch because it scrambles the curve everywhere at once.
+2. **Round numbers.** Values cluster at $100, 200, 250, 500, 1{,}000, 2{,}000, 5{,}000, 10{,}000$, mimicking the fraudster who rounds mentally. Subtle, because round numbers preserve a leading-digit bias of their own.
+3. **Psychological.** Humans asked to write "random" numbers over-pick the mid digits 3–6 and under-pick 1 and 9 — a reproducible cognitive bias documented in the experimental literature.
+
+Each strategy is a different attack on the curve, so each gives the bundle a different stress test. To turn that into a single picture of detection power, sweep the contamination fraction from 0 % to 100 % and run the four-test bundle 30 times at each level. The result is the **detection-power curve**:
 
 ![Detection power across three fabrication strategies on the GeoNames cities5000 dataset.](../figures/fraud_detection_power.png)
 
 The MAD curve climbs through Nigrini's verdict tiers (acceptable → marginally acceptable → non-conformity) within the first 5–10 % of contamination. The Pearson $\chi^2$ statistic — log-scale — climbs steeply through its $\alpha = 0.05$ critical value of 15.51 at roughly the same point. The empirical rejection rate at $\alpha = 0.05$ saturates near 1 for all three fabrication kinds by 10–15 % contamination.
 
-The reading: at this sample size, a Benford-style audit reliably detects fraud whenever 10 % or more of the entries are fabricated by any of the three strategies. Below 5 %, detection power varies — round-number fabrication is the hardest to catch because it preserves the leading-digit bias of Benford while displacing it onto digits $1$, $2$ and $5$.
+The reading: at this sample size, a Benford-style audit reliably detects fraud whenever 10 % or more of the entries are fabricated by any of the three strategies. Below 5 %, detection power varies — round-number fabrication is the hardest to catch because it preserves the leading-digit bias of Benford while displacing it onto digits $1$, $2$ and $5$. The bundle is not a magic detector; it is a coarse filter that flags gross contamination cheaply and leaves the auditor to decide where to look closer.
 
 This experiment is not just a toy. Documented historical cases include:
 
@@ -209,19 +219,21 @@ The script `scripts/exp_fraud_demo.py` reproduces the *mechanism* by which these
 
 ## 7. When Benford fails, and why that is also useful
 
-Benford's Law is not a universal law of numbers. It applies to datasets whose values span several orders of magnitude *multiplicatively* and are generated by a process that mixes scales. It fails — sharply — for at least three classes of data:
+§6 showed the bundle catching deliberate contamination. The flip side is worth being explicit about: Benford is not a universal law of numbers, and there are honest datasets where it has no business holding. Knowing the boundary is part of using the tool — applying a Benford test to data outside its operating range produces false positives, not insight. The law applies to datasets whose values span several orders of magnitude *multiplicatively* and are generated by a process that mixes scales. It fails — sharply — for at least three classes of data:
 
-1. **Bounded data on an additive scale.** Adult heights, body temperatures, IQ scores, exam grades. The values sit within one order of magnitude, so the log-mantissa $Y$ is sharply concentrated and the first-digit distribution collapses to whatever digit dominates the support. §2's heights example is the textbook case.
+1. **Bounded data on an additive scale.** Adult heights, body temperatures, IQ scores, exam grades. The values sit within one order of magnitude, so the log-mantissa $Y$ is sharply concentrated and the first-digit distribution collapses to whatever digit dominates the support. §2's heights example is the textbook case — a single tall bar at $d = 1$ and zeros elsewhere.
 
-2. **Assigned identifiers.** Phone numbers, ZIP codes, social security numbers, ID document numbers. These are sampled from a fixed combinatorial design, not generated by a multiplicative process; the leading digit is a structural artefact of the issuing authority.
+2. **Assigned identifiers.** Phone numbers, ZIP codes, social security numbers, ID document numbers. These are sampled from a fixed combinatorial design, not generated by a multiplicative process; the leading digit is a structural artefact of the issuing authority, not of any underlying random process. There is nothing for a Benford test to find here, and a "violation" only tells you that the data have a deliberate structure.
 
-3. **Truncated data.** Any dataset with a hard floor or ceiling distorts the leading-digit distribution near the cutoff. The GeoNames `cities5000` data show a small spike at $d = 5$ for exactly this reason — every city *just* over the 5,000-population threshold has a leading 5.
+3. **Truncated data.** Any dataset with a hard floor or ceiling distorts the leading-digit distribution near the cutoff. The GeoNames `cities5000` data show a small spike at $d = 5$ for exactly this reason — every city *just* over the 5,000-population threshold has a leading 5. The test still works, but the analyst has to know the truncation is there before reading the spike as fraud.
 
-The failures are operationally useful. A dataset that *should* conform to Benford and does not is a flag: either the data-generating process is not what you thought, or the data have been tampered with. Forensic accounting uses this asymmetrically — a Benford-conforming dataset is uninformative; a Benford-failing dataset is the question worth asking.
+The failures are operationally useful, and the asymmetry is the point. A dataset that *should* conform to Benford and does not is a flag: either the data-generating process is not what you thought, or the data have been tampered with. Forensic accounting uses this asymmetrically — a Benford-conforming dataset is uninformative on its own; a Benford-failing dataset is the question worth asking. The law is most powerful not when it confirms but when it refuses to.
 
 ---
 
 ## 8. Takeaways
+
+Five points to leave on the table:
 
 1. **The Benford PMF $P(d) = \log_{10}(1 + 1/d)$ is structural, not coincidental.** Two unrelated derivations — log-uniform mantissa and scale invariance — converge on the same curve. The convergence is the evidence.
 
