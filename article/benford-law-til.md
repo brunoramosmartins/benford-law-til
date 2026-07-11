@@ -1,3 +1,11 @@
+---
+title: "Benford's Law: two derivations, four tests, one fraud detector"
+description: "Two independent derivations of Benford's leading-digit law, four conformity tests, and a fraud-detection demo on GeoNames city data."
+date: 2026-05-03
+category: til
+tags: statistics, fraud-detection, mathematics, audit
+---
+
 # Benford's Law: two derivations, four tests, one fraud detector
 
 > The first digit of "natural" numerical data is not uniform but logarithmic: $P(d) = \log_{10}(1 + 1/d)$, so a leading 1 occurs about 30% of the time and a leading 9 less than 5%. This TIL gives two independent rigorous derivations, four conformity tests, and an end-to-end fraud-detection demo.
