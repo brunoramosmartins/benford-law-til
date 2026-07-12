@@ -8,7 +8,13 @@ tags: statistics, fraud-detection, mathematics, audit
 
 # Benford's Law: two derivations, four tests, one fraud detector
 
-> The first digit of "natural" numerical data is not uniform but logarithmic: $P(d) = \log_{10}(1 + 1/d)$, so a leading 1 occurs about 30% of the time and a leading 9 less than 5%. This TIL gives two independent rigorous derivations, four conformity tests, and an end-to-end fraud-detection demo.
+> **What this is.** The first digit of "natural" numerical data is not uniform but logarithmic: $P(d) = \log_{10}(1 + 1/d)$, so a leading 1 occurs about 30% of the time and a leading 9 less than 5%. This note reconstructs the law from two independent arguments — one probabilistic, one structural — shows real data landing on the curve, and closes the loop with a fraud-detection demo. It started as a margin note while rereading *The Drunkard's Walk*.
+>
+> **What you should know before reading.** Comfort with logarithms, basic probability (PMF, CDF), and the idea of a hypothesis test. The measure-theoretic asides (Haar measure, equidistribution) are stated, not required.
+>
+> **What you will take away.** Why the logarithmic law is structural rather than coincidental, four complementary conformity tests and when each applies, and the operating range where a Benford audit works — and where it produces false positives.
+>
+> **Code.** Derivations, tests, and figures reproduce from the [companion repository](https://github.com/brunoramosmartins/benford-law-til) with fixed seeds.
 
 ---
 
@@ -18,7 +24,7 @@ I recently reread *The Drunkard's Walk* and stumbled again on the paragraph wher
 
 ---
 
-## 1. The worn pages of a logarithm table
+## The worn pages of a logarithm table
 
 In 1881 the astronomer Simon Newcomb noticed something odd while flipping through his copy of a book of logarithms. The early pages — those for numbers starting with 1 — were filthy and dog-eared; the later pages, for numbers starting with 9, were crisp and clean. A logarithm table is the most stubbornly mechanical of references. There is no plot, no narrative, no way for some chapters to be more interesting than others. So why were the early pages worn out?
 
@@ -38,7 +44,7 @@ The rest is detail.
 
 ---
 
-## 2. Empirical Benford in three datasets
+## Empirical Benford in three datasets
 
 Before any derivation it is worth pausing on the data. Benford lined up twenty heterogeneous datasets to show the logarithmic curve was empirical rather than invented; I will repeat the gesture at smaller scale with three datasets chosen to cover three distinct regimes. The first is a messy real-world case — world city populations — where the generating process is multiplicative and spans several orders of magnitude. The second is a clean analytic sequence — Fibonacci — where Benford appears as a theorem rather than as luck. The third is a deliberate negative control — adult heights — where the law *should not* appear, and the corresponding panel pins down what fails when the multiplicative regime is dropped. The figure below overlays, in each panel, the empirical first-digit frequency (blue) and the theoretical Benford PMF (orange); the reader should look for the two series tracking each other in the first and second panels, and for the glaring discrepancy in the third.
 
@@ -46,7 +52,7 @@ Before any derivation it is worth pausing on the data. Benford lined up twenty h
 
 **World city populations.** The bundled GeoNames `cities5000` snapshot lists about 68,000 cities with at least 5,000 inhabitants. The empirical $\hat P(1) \approx 0.31$, $\hat P(9) \approx 0.06$, monotonically decreasing apart from a small spike at $d = 5$ (an artefact of the 5,000-population cutoff — every city *just* over the threshold has a leading 5). This is the canonical example: real geographic data spanning many orders of magnitude (from $10^3$ to $10^7$), drawn from the same multiplicative growth process across continents.
 
-**Fibonacci numbers.** $F_1, \ldots, F_{1000}$, computed via Binet's closed form. The first-digit distribution is *exactly* Benford in the limit: Weyl's equidistribution theorem says the fractional part of $n \log_{10}(\varphi)$ is equidistributed on $[0, 1)$, and §3 will turn that into the Benford PMF directly. Even at $n = 1000$ the empirical fit is within about 4 % per cell.
+**Fibonacci numbers.** $F_1, \ldots, F_{1000}$, computed via Binet's closed form. The first-digit distribution is *exactly* Benford in the limit: Weyl's equidistribution theorem says the fractional part of $n \log_{10}(\varphi)$ is equidistributed on $[0, 1)$, and the first derivation below turns that into the Benford PMF directly. Even at $n = 1000$ the empirical fit is within about 4 % per cell.
 
 **Adult heights.** Synthetic, $n = 10{,}000$, $\mathcal{N}(170, 10)$ centimetres. *Not* Benford: with practically every value between 150 and 190 cm, every value starts with 1, and the corresponding panel of the figure shows exactly that — a single tall blue bar at $d = 1$ and zeros for every other digit, while the orange Benford curve fans out from $1$ to $9$. The visual contrast is the point: that lone bar is what an additive, single-order-of-magnitude dataset looks like, well outside the regime where the law applies. $\hat P(1) > 0.55$ and several digits are absent entirely. This is the negative control — the class of data Benford explicitly does not apply to.
 
@@ -54,7 +60,7 @@ The three curves capture the operating range. Benford appears wherever the data 
 
 ---
 
-## 3. First derivation: the mantissa is uniform on $[0, 1)$
+## First derivation: the mantissa is uniform on $[0, 1)$
 
 Newcomb's original intuition was geometric: the first digit of a number depends only on where the number falls inside a "decade" — the interval between two consecutive powers of ten. To make that intuition precise we need a coordinate that sees only this relative position and ignores the order of magnitude. The logarithm does exactly that, and the entire derivation falls out of it in a few steps.
 
@@ -102,15 +108,15 @@ The substantive question is *why* the premise should hold. Three arguments:
 
 **Equidistribution.** For a deterministic sequence like $X_n = a^n$ with $\log_{10}(a)$ irrational, Weyl's equidistribution theorem says the fractional part of $n \log_{10}(a)$ is equidistributed on $[0, 1)$. The first-digit empirical distribution converges *exactly* to Benford. Fibonacci is the cleanest example: $F_n \sim \varphi^n / \sqrt{5}$, and $\log_{10}(\varphi)$ is irrational.
 
-**Measure-theoretic uniqueness.** Translation-invariant probability measures on the circle $\mathbb{R}/\mathbb{Z}$ are unique up to normalisation (Haar measure). Section 4 turns this remark into Pinkham's derivation.
+**Measure-theoretic uniqueness.** Translation-invariant probability measures on the circle $\mathbb{R}/\mathbb{Z}$ are unique up to normalisation (Haar measure). The second derivation below turns this remark into Pinkham's derivation.
 
-The premise is *load-bearing*: if the log-mantissa is not uniform, the first-digit distribution is whatever follows from the actual density of $Y$. A Gaussian $X$ centred at $\log_{10}(170) \approx 2.23$ — adult heights in centimetres — produces a $Y$-density sharply peaked near $0.23$, which corresponds to a first digit pinned at $1$. The 55 % leading-1 frequency in §2's heights dataset is exactly this effect made visible.
+The premise is *load-bearing*: if the log-mantissa is not uniform, the first-digit distribution is whatever follows from the actual density of $Y$. A Gaussian $X$ centred at $\log_{10}(170) \approx 2.23$ — adult heights in centimetres — produces a $Y$-density sharply peaked near $0.23$, which corresponds to a first digit pinned at $1$. The 55 % leading-1 frequency in the heights dataset above is exactly this effect made visible.
 
 So the first derivation answers the question "*given* a log-uniform mantissa, what is the first-digit law?" — but not "*why* should the mantissa be log-uniform?" That is the gap Pinkham closes.
 
 ---
 
-## 4. Second derivation: scale invariance forces $1/x$
+## Second derivation: scale invariance forces $1/x$
 
 Currency is the cleanest motivation. Take a dataset of revenues in BRL. Convert to USD by multiplying every entry by some exchange rate $c$. The leading-digit distribution should not change just because we relabelled the unit — the dollar and the real are arbitrary tags, and the underlying economic activity does not know which one we picked. That informal expectation is a *symmetry* claim about the data, not a statistical one. Formally:
 
@@ -130,7 +136,7 @@ $$
 
 As $c$ ranges over $(0, \infty)$, $\log_{10}(c)$ ranges over all of $\mathbb{R}$, so $\alpha = \log_{10}(c) \bmod 1$ takes every value in $[0, 1)$. Scale invariance of $X$ is therefore *equivalent* to translation invariance of $Y$ on the circle $\mathbb{R}/\mathbb{Z}$. And there is exactly one translation-invariant probability distribution on the circle: the uniform distribution. The intuition is symmetry — any other distribution would have a "preferred point" that translation would move, contradicting invariance. (Formally, this is the uniqueness of Haar measure on a compact group.)
 
-Scale invariance therefore forces $Y \sim \mathrm{Uniform}(0, 1)$, which by §3 forces the Benford PMF. The argument is clean enough to deserve a name; it is **Pinkham's theorem**.
+Scale invariance therefore forces $Y \sim \mathrm{Uniform}(0, 1)$, which by the first derivation forces the Benford PMF. The argument is clean enough to deserve a name; it is **Pinkham's theorem**.
 
 A complementary route works directly with the *density* on $X$ rather than passing through the log-mantissa, and is worth seeing because it makes the $1/x$ shape explicit. Under $X \mapsto cX$ a probability density transforms as $f(x) \mapsto \frac{1}{c} f(x/c)$. Demanding that this equal $f(x)$ for every $c > 0$ forces $f(x) \propto 1/x$. So on a finite window $[a, b] \subset (0, \infty)$ the only probability density invariant under multiplication is
 
@@ -152,13 +158,13 @@ Two corollaries worth flagging:
 
 **Base invariance.** Repeating the derivation in base $b > 1$ gives $P_b(d) = \log_b(1 + 1/d)$ for $d = 1, 2, \ldots, b-1$. In octal, $P_8(1) = \log_8 2 = 1/3$, slightly more than the decimal $P_{10}(1) \approx 0.301$. Same shape, different support. The choice of base 10 is a notational artefact; the law is structural.
 
-**Why two derivations matter.** §3 starts from a probabilistic premise (log-uniform mantissa) and lands on $\log_{10}(1 + 1/d)$. §4 starts from a structural premise (no preferred unit) and lands on $\log_{10}(1 + 1/d)$. §4 *implies* §3's premise, so the two are not literally independent — but they are *structurally* different. The fact that two unrelated assumptions converge on the same formula is the strongest evidence that the law is not an empirical accident.
+**Why two derivations matter.** The first derivation starts from a probabilistic premise (log-uniform mantissa) and lands on $\log_{10}(1 + 1/d)$. The second starts from a structural premise (no preferred unit) and lands on $\log_{10}(1 + 1/d)$. The second *implies* the first's premise, so the two are not literally independent — but they are *structurally* different. The fact that two unrelated assumptions converge on the same formula is the strongest evidence that the law is not an empirical accident.
 
 The next question is operational: given a real dataset, how do we *test* whether it conforms?
 
 ---
 
-## 5. Testing conformity: $\chi^2$, KS, MAD, $Z$
+## Testing conformity: $\chi^2$, KS, MAD, $Z$
 
 The law is structural, but real data only approximately satisfies the premise — a finite sample never sits exactly on the Benford curve, and even multi-decade datasets carry a residual ripple. So an empirical question always remains: how close is close enough to call the data conforming, and what kind of deviation are we worried about? Different audiences want different gaps — a hypothesis tester wants a p-value, an auditor wants a verdict scale that does not collapse at industrial sample sizes, a detective wants to know *which* digit is off. No single statistic answers all three, so the standard practice is to run a small bundle. Four tests, four sensitivities. Take an empirical first-digit distribution $\hat P(1), \ldots, \hat P(9)$ on a sample of size $n$ and ask: how close is it to the Benford PMF (the probability mass function $P(d) = \log_{10}(1 + 1/d)$, $d = 1, \ldots, 9$)?
 
@@ -193,9 +199,9 @@ In practice, run all four — they cost almost nothing on top of computing $\hat
 
 ---
 
-## 6. Fraud demo: when fabricated numbers betray themselves
+## Fraud demo: when fabricated numbers betray themselves
 
-§5 set up the conformity bundle on clean data; §6 puts it to work in an adversarial setting. Take a clean Benford-conforming dataset, replace a fraction of its entries with fabricated values, and watch the four-test bundle cross from *accept* to *reject*. The setup is deliberately stylised — there is no real fraudster on the other side, and we control everything — but it is the cleanest way to see what kind of contamination the bundle catches and what it lets through. The point is not to prove that the bundle works; it is to read off where its threshold sits.
+The conformity bundle above was built on clean data; here we put it to work in an adversarial setting. Take a clean Benford-conforming dataset, replace a fraction of its entries with fabricated values, and watch the four-test bundle cross from *accept* to *reject*. The setup is deliberately stylised — there is no real fraudster on the other side, and we control everything — but it is the cleanest way to see what kind of contamination the bundle catches and what it lets through. The point is not to prove that the bundle works; it is to read off where its threshold sits.
 
 ![Clean vs 30%-contaminated city populations.](../figures/fraud_before_after.png)
 
@@ -225,11 +231,11 @@ The script `scripts/exp_fraud_demo.py` reproduces the *mechanism* by which these
 
 ---
 
-## 7. When Benford fails, and why that is also useful
+## When Benford fails, and why that is also useful
 
-§6 showed the bundle catching deliberate contamination. The flip side is worth being explicit about: Benford is not a universal law of numbers, and there are honest datasets where it has no business holding. Knowing the boundary is part of using the tool — applying a Benford test to data outside its operating range produces false positives, not insight. The law applies to datasets whose values span several orders of magnitude *multiplicatively* and are generated by a process that mixes scales. It fails — sharply — for at least three classes of data:
+The fraud demo showed the bundle catching deliberate contamination. The flip side is worth being explicit about: Benford is not a universal law of numbers, and there are honest datasets where it has no business holding. Knowing the boundary is part of using the tool — applying a Benford test to data outside its operating range produces false positives, not insight. The law applies to datasets whose values span several orders of magnitude *multiplicatively* and are generated by a process that mixes scales. It fails — sharply — for at least three classes of data:
 
-1. **Bounded data on an additive scale.** Adult heights, body temperatures, IQ scores, exam grades. The values sit within one order of magnitude, so the log-mantissa $Y$ is sharply concentrated and the first-digit distribution collapses to whatever digit dominates the support. §2's heights example is the textbook case — a single tall bar at $d = 1$ and zeros elsewhere.
+1. **Bounded data on an additive scale.** Adult heights, body temperatures, IQ scores, exam grades. The values sit within one order of magnitude, so the log-mantissa $Y$ is sharply concentrated and the first-digit distribution collapses to whatever digit dominates the support. the heights example above is the textbook case — a single tall bar at $d = 1$ and zeros elsewhere.
 
 2. **Assigned identifiers.** Phone numbers, ZIP codes, social security numbers, ID document numbers. These are sampled from a fixed combinatorial design, not generated by a multiplicative process; the leading digit is a structural artefact of the issuing authority, not of any underlying random process. There is nothing for a Benford test to find here, and a "violation" only tells you that the data have a deliberate structure.
 
@@ -239,7 +245,7 @@ The failures are operationally useful, and the asymmetry is the point. A dataset
 
 ---
 
-## 8. Takeaways
+## Takeaways
 
 Five points to leave on the table:
 
@@ -259,10 +265,10 @@ The code, derivations, exercises, and figures are in the companion repository: <
 
 ## References
 
-- **Newcomb, S.** (1881). Note on the frequency of use of the different digits in natural numbers. *American Journal of Mathematics*, **4**(1), 39–40.
-- **Benford, F.** (1938). The law of anomalous numbers. *Proceedings of the American Philosophical Society*, **78**(4), 551–572.
-- **Pinkham, R. S.** (1961). On the distribution of first significant digits. *Annals of Mathematical Statistics*, **32**(4), 1223–1230.
-- **Hill, T. P.** (1995). A statistical derivation of the significant-digit law. *Statistical Science*, **10**(4), 354–363.
-- **Nigrini, M. J.** (2012). *Benford's Law: Applications for Forensic Accounting, Auditing, and Fraud Detection*. Wiley.
-- **Berger, A. & Hill, T. P.** (2015). *An Introduction to Benford's Law*. Princeton University Press.
-- **Rauch, B., Göttsche, M., Brähler, G. & Engel, S.** (2011). Fact and fiction in EU-governmental economic data. *German Economic Review*, **12**(3), 243–255.
+- Newcomb, S. (1881). Note on the frequency of use of the different digits in natural numbers. *American Journal of Mathematics*, **4**(1), 39–40.
+- Benford, F. (1938). The law of anomalous numbers. *Proceedings of the American Philosophical Society*, **78**(4), 551–572.
+- Pinkham, R. S. (1961). On the distribution of first significant digits. *Annals of Mathematical Statistics*, **32**(4), 1223–1230.
+- Hill, T. P. (1995). A statistical derivation of the significant-digit law. *Statistical Science*, **10**(4), 354–363.
+- Nigrini, M. J. (2012). *Benford's Law: Applications for Forensic Accounting, Auditing, and Fraud Detection*. Wiley.
+- Berger, A. & Hill, T. P. (2015). *An Introduction to Benford's Law*. Princeton University Press.
+- Rauch, B., Göttsche, M., Brähler, G. & Engel, S. (2011). Fact and fiction in EU-governmental economic data. *German Economic Review*, **12**(3), 243–255.
